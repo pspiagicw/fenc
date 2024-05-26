@@ -1,0 +1,19 @@
+name = "fenc"
+
+[variables]
+version = "0.0.1"
+
+[task.build]
+description = "Build the project."
+command = "go build ."
+depends = [
+    "format"
+]
+
+
+[task.format]
+command = "go fmt ./..."
+
+
+[task.test]
+command = "go test ./..."
