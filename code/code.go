@@ -1,11 +1,14 @@
 package code
 
-type Instruction struct {
-	OP       int
-	Argument int
-}
+type Op int
 
 const (
-	PUSH = iota
-	PEEK
+	_ = iota
+	PUSH
 )
+
+type Instruction struct {
+	OpCode  Op
+	Args    []int
+	Comment string
+}
