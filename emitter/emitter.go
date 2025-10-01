@@ -9,6 +9,7 @@ type Emitter struct {
 	tape          []code.Instruction
 	constants     []object.Object
 	constantIndex int
+	tapeIndex     int
 }
 
 func NewEmitter() *Emitter {
@@ -16,10 +17,16 @@ func NewEmitter() *Emitter {
 		constants:     []object.Object{},
 		constantIndex: 0,
 		tape:          []code.Instruction{},
+		tapeIndex:     0,
 	}
 }
-func (e *Emitter) Emit(Op code.Op, Args ...int) error {
-	return nil
+
+func (e *Emitter) Emit(op code.Op, args ...int) {
+	ins := code.Instruction{
+		OpCode: op,
+		Args:   args,
+	}
+	e.tape = append(e.tape, ins)
 }
 
 func (e *Emitter) Constant(o object.Object) int {
@@ -33,4 +40,92 @@ func (e *Emitter) PushInt(value int) {
 	o := object.CreateInt(value)
 	index := e.Constant(o)
 	e.Emit(code.PUSH, index)
+}
+
+func (e *Emitter) PushFloat(value float32) {
+	o := object.CreateFloat(value)
+	index := e.Constant(o)
+	e.Emit(code.PUSH, index)
+}
+
+func (e *Emitter) PushBool(value bool) {
+	o := object.CreateBool(value)
+	index := e.Constant(o)
+	e.Emit(code.PUSH, index)
+}
+
+func (e *Emitter) PushString(value string) {
+	o := object.CreateString(value)
+	index := e.Constant(o)
+	e.Emit(code.PUSH, index)
+}
+
+func (e *Emitter) AddInt() {
+	e.Emit(code.ADD_INT)
+}
+func (e *Emitter) SubInt() {
+	e.Emit(code.SUB_INT)
+}
+func (e *Emitter) MulInt() {
+	e.Emit(code.MUL_INT)
+}
+func (e *Emitter) DivInt() {
+	e.Emit(code.DIV_INT)
+}
+
+func (e *Emitter) LtInt() {
+	e.Emit(code.LT_INT)
+}
+func (e *Emitter) LteInt() {
+	e.Emit(code.LTE_INT)
+}
+func (e *Emitter) GtInt() {
+	e.Emit(code.GT_INT)
+}
+func (e *Emitter) GteInt() {
+	e.Emit(code.GTE_INT)
+}
+
+func (e *Emitter) Eq() {
+	e.Emit(code.EQ)
+}
+func (e *Emitter) Neq() {
+	e.Emit(code.NEQ)
+}
+
+func (e *Emitter) AddFloat() {
+	e.Emit(code.ADD_FLOAT)
+}
+func (e *Emitter) SubFloat() {
+	e.Emit(code.SUB_FLOAT)
+}
+func (e *Emitter) MulFloat() {
+	e.Emit(code.MUL_FLOAT)
+}
+func (e *Emitter) DivFloat() {
+	e.Emit(code.DIV_FLOAT)
+}
+
+func (e *Emitter) LtFloat() {
+	e.Emit(code.LT_FLOAT)
+}
+func (e *Emitter) LteFloat() {
+	e.Emit(code.LTE_FLOAT)
+}
+func (e *Emitter) GtFloat() {
+	e.Emit(code.GT_FLOAT)
+}
+func (e *Emitter) GteFloat() {
+	e.Emit(code.GTE_FLOAT)
+}
+
+func (e *Emitter) AndBool() {
+	e.Emit(code.AND_BOOL)
+}
+func (e *Emitter) OrBool() {
+	e.Emit(code.OR_BOOL)
+}
+
+func (e *Emitter) AddString() {
+	e.Emit(code.ADD_STRING)
 }

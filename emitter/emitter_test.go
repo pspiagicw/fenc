@@ -23,6 +23,555 @@ func TestPush(t *testing.T) {
 
 	testEmitter(t, e, expected, constants)
 }
+
+func TestMultiplePush(t *testing.T) {
+	e := getEmitter()
+	e.PushInt(1)
+	e.PushInt(222)
+	e.PushInt(1)
+
+	constants := []object.Object{
+		object.CreateInt(1),
+		object.CreateInt(222),
+		object.CreateInt(1),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.PUSH, Args: createArgs(2)},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestAdd(t *testing.T) {
+	e := getEmitter()
+	e.PushInt(1)
+	e.PushInt(2)
+	e.AddInt()
+
+	constants := []object.Object{
+		object.CreateInt(1),
+		object.CreateInt(2),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.ADD_INT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestPushFloatStringBool(t *testing.T) {
+	e := getEmitter()
+	e.PushFloat(1)
+	e.PushBool(true)
+	e.PushString("string")
+
+	constants := []object.Object{
+		object.CreateFloat(1),
+		object.CreateBool(true),
+		object.CreateString("string"),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.PUSH, Args: createArgs(2)},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestSubInt(t *testing.T) {
+	e := getEmitter()
+	e.PushInt(5)
+	e.PushInt(3)
+	e.SubInt()
+
+	constants := []object.Object{
+		object.CreateInt(5),
+		object.CreateInt(3),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.SUB_INT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestMulInt(t *testing.T) {
+	e := getEmitter()
+	e.PushInt(4)
+	e.PushInt(2)
+	e.MulInt()
+
+	constants := []object.Object{
+		object.CreateInt(4),
+		object.CreateInt(2),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.MUL_INT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestDivInt(t *testing.T) {
+	e := getEmitter()
+	e.PushInt(10)
+	e.PushInt(4)
+	e.DivInt()
+
+	constants := []object.Object{
+		object.CreateInt(10),
+		object.CreateInt(4),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.DIV_INT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestLtInt(t *testing.T) {
+	e := getEmitter()
+	e.PushInt(2)
+	e.PushInt(5)
+	e.LtInt()
+
+	constants := []object.Object{
+		object.CreateInt(2),
+		object.CreateInt(5),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.LT_INT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestLteInt(t *testing.T) {
+	e := getEmitter()
+	e.PushInt(2)
+	e.PushInt(2)
+	e.LteInt()
+
+	constants := []object.Object{
+		object.CreateInt(2),
+		object.CreateInt(2),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.LTE_INT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestGtInt(t *testing.T) {
+	e := getEmitter()
+	e.PushInt(10)
+	e.PushInt(2)
+	e.GtInt()
+
+	constants := []object.Object{
+		object.CreateInt(10),
+		object.CreateInt(2),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.GT_INT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestGteInt(t *testing.T) {
+	e := getEmitter()
+	e.PushFloat(10)
+	e.PushFloat(10)
+	e.GteInt()
+
+	constants := []object.Object{
+		object.CreateFloat(10),
+		object.CreateFloat(10),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.GTE_INT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestEqInt(t *testing.T) {
+	e := getEmitter()
+	e.PushFloat(10)
+	e.PushFloat(10)
+	e.Eq()
+
+	constants := []object.Object{
+		object.CreateFloat(10),
+		object.CreateFloat(10),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.EQ},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestNeqInt(t *testing.T) {
+	e := getEmitter()
+	e.PushFloat(10)
+	e.PushFloat(10)
+	e.Neq()
+
+	constants := []object.Object{
+		object.CreateFloat(10),
+		object.CreateFloat(10),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.NEQ},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+// ---- (Float) ----
+
+func TestAddFloat(t *testing.T) {
+	e := getEmitter()
+	e.PushFloat(1.5)
+	e.PushFloat(2.5)
+	e.AddFloat()
+
+	constants := []object.Object{
+		object.CreateFloat(1.5),
+		object.CreateFloat(2.5),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.ADD_FLOAT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestSubFloat(t *testing.T) {
+	e := getEmitter()
+	e.PushFloat(5.5)
+	e.PushFloat(3.25)
+	e.SubFloat()
+
+	constants := []object.Object{
+		object.CreateFloat(5.5),
+		object.CreateFloat(3.25),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.SUB_FLOAT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestMulFloat(t *testing.T) {
+	e := getEmitter()
+	e.PushFloat(2.5)
+	e.PushFloat(4)
+	e.MulFloat()
+
+	constants := []object.Object{
+		object.CreateFloat(2.5),
+		object.CreateFloat(4),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.MUL_FLOAT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+// ---- Comparison (Float) ----
+
+func TestLtFloat(t *testing.T) {
+	e := getEmitter()
+	e.PushFloat(1.2)
+	e.PushFloat(3.4)
+	e.LtFloat()
+
+	constants := []object.Object{
+		object.CreateFloat(1.2),
+		object.CreateFloat(3.4),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.LT_FLOAT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestLteFloat(t *testing.T) {
+	e := getEmitter()
+	e.PushFloat(1.2)
+	e.PushFloat(3.4)
+	e.LteFloat()
+
+	constants := []object.Object{
+		object.CreateFloat(1.2),
+		object.CreateFloat(3.4),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.LTE_FLOAT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestGtFloat(t *testing.T) {
+	e := getEmitter()
+	e.PushFloat(5.0)
+	e.PushFloat(2.0)
+	e.GtFloat()
+
+	constants := []object.Object{
+		object.CreateFloat(5.0),
+		object.CreateFloat(2.0),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.GT_FLOAT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestGteFloat(t *testing.T) {
+	e := getEmitter()
+	e.PushFloat(5.0)
+	e.PushFloat(2.0)
+	e.GteFloat()
+
+	constants := []object.Object{
+		object.CreateFloat(5.0),
+		object.CreateFloat(2.0),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.GTE_FLOAT},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestEqFloat(t *testing.T) {
+	e := getEmitter()
+	e.PushFloat(1.0)
+	e.PushFloat(1.0)
+	e.Eq()
+
+	constants := []object.Object{
+		object.CreateFloat(1.0),
+		object.CreateFloat(1.0),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.EQ},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestNeqFloat(t *testing.T) {
+	e := getEmitter()
+	e.PushFloat(2.0)
+	e.PushFloat(3.0)
+	e.Neq()
+
+	constants := []object.Object{
+		object.CreateFloat(2.0),
+		object.CreateFloat(3.0),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.NEQ},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+// ---- (bool) ----
+
+func TestNeqBool(t *testing.T) {
+	e := getEmitter()
+	e.PushBool(true)
+	e.PushBool(false)
+	e.Neq()
+
+	constants := []object.Object{
+		object.CreateBool(true),
+		object.CreateBool(false),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.NEQ},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestAndBool(t *testing.T) {
+	e := getEmitter()
+	e.PushBool(true)
+	e.PushBool(false)
+	e.AndBool()
+
+	constants := []object.Object{
+		object.CreateBool(true),
+		object.CreateBool(false),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.AND_BOOL},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestOrBool(t *testing.T) {
+	e := getEmitter()
+	e.PushBool(true)
+	e.PushBool(true)
+	e.OrBool()
+
+	constants := []object.Object{
+		object.CreateBool(true),
+		object.CreateBool(true),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.OR_BOOL},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+// --- (string) ---
+func TestAddString(t *testing.T) {
+	e := getEmitter()
+	e.PushString("foo")
+	e.PushString("bar")
+	e.AddString()
+
+	constants := []object.Object{
+		object.CreateString("foo"),
+		object.CreateString("bar"),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.ADD_STRING},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestEqString(t *testing.T) {
+	e := getEmitter()
+	e.PushString("a")
+	e.PushString("a")
+	e.Eq()
+
+	constants := []object.Object{
+		object.CreateString("a"),
+		object.CreateString("a"),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.EQ},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestNEqString(t *testing.T) {
+	e := getEmitter()
+	e.PushString("a")
+	e.PushString("a")
+	e.Neq()
+
+	constants := []object.Object{
+		object.CreateString("a"),
+		object.CreateString("a"),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.NEQ},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
 func createArgs(args ...int) []int {
 	return args
 }
