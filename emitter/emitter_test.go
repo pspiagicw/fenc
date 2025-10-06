@@ -630,6 +630,19 @@ func TestReturn(t *testing.T) {
 
 }
 
+func TestCall(t *testing.T) {
+	e := getEmitter()
+	e.Call()
+
+	constants := []object.Object{}
+
+	expected := []code.Instruction{
+		{OpCode: code.CALL, Args: createArgs()},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
 func createArgs(args ...int) []int {
 	return args
 }

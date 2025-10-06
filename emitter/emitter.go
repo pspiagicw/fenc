@@ -103,6 +103,10 @@ func (e *Emitter) Patch(jumpPos int) {
 	e.tape[jumpPos] = ins
 }
 
+func (e *Emitter) Call() {
+	e.Emit(code.CALL)
+}
+
 func (e *Emitter) AddInt() {
 	e.Emit(code.ADD_INT)
 }

@@ -48,6 +48,7 @@ const (
 	JUMP_FALSE
 
 	RETURN
+	CALL
 )
 
 type Instruction struct {
