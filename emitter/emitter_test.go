@@ -1,12 +1,10 @@
 package emitter
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
 	"github.com/pspiagicw/fenc/code"
-	"github.com/pspiagicw/fenc/dump"
 	"github.com/pspiagicw/fenc/object"
 )
 
