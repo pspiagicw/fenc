@@ -9,18 +9,32 @@ import (
 type CompileFunc func(*Emitter)
 
 type Emitter struct {
-	tape          []code.Instruction
-	constants     []object.Object
-	constantIndex int
-	tapeIndex     int
+	tape      []code.Instruction
+	tapeIndex int
+	constants *ConstantPool
+	symbols   *SymbolTable
+}
+
+func (e *Emitter) enterScope() {
+	e.symbols = NewEnclosedSymbolTable(e.symbols)
+}
+func (e *Emitter) leaveScope() {
+	e.symbols = e.symbols.Outer
+}
+func (e *Emitter) NewSubEmitter() *Emitter {
+	n := NewEmitter()
+	n.constants = e.constants
+	n.symbols = e.symbols
+
+	return n
 }
 
 func NewEmitter() *Emitter {
 	return &Emitter{
-		constants:     []object.Object{},
-		constantIndex: 0,
-		tape:          []code.Instruction{},
-		tapeIndex:     0,
+		constants: NewConstantPool(),
+		tape:      []code.Instruction{},
+		tapeIndex: 0,
+		symbols:   NewSymbolTable(),
 	}
 }
 
@@ -35,10 +49,7 @@ func (e *Emitter) Emit(op code.Op, args ...int) int {
 }
 
 func (e *Emitter) Constant(o object.Object) int {
-	e.constants = append(e.constants, o)
-	// alternative to return constantIndex++
-	e.constantIndex += 1
-	return e.constantIndex - 1
+	return e.constants.Add(o)
 }
 
 func (e *Emitter) PushInt(value int) {
@@ -62,6 +73,10 @@ func (e *Emitter) PushBool(value bool) {
 func (e *Emitter) PushString(value string) {
 	o := object.CreateString(value)
 	index := e.Constant(o)
+	e.Emit(code.PUSH, index)
+}
+func (e *Emitter) PushFunction(value object.Function) {
+	index := e.Constant(value)
 	e.Emit(code.PUSH, index)
 }
 
@@ -103,8 +118,57 @@ func (e *Emitter) Patch(jumpPos int) {
 	e.tape[jumpPos] = ins
 }
 
-func (e *Emitter) Call() {
-	e.Emit(code.CALL)
+func (e *Emitter) Store(name string) {
+	s := e.symbols.Define(name)
+	switch s.Scope {
+	case GLOBAL_SCOPE:
+		e.Emit(code.STORE_GLOBAL, s.Index)
+	case LOCAL_SCOPE:
+		e.Emit(code.STORE_LOCAL, s.Index)
+	}
+}
+
+func (e *Emitter) Load(name string) bool {
+	s, ok := e.symbols.Resolve(name)
+	if !ok {
+		return ok
+	}
+
+	switch s.Scope {
+	case GLOBAL_SCOPE:
+		e.Emit(code.LOAD_GLOBAL, s.Index)
+	case LOCAL_SCOPE:
+		e.Emit(code.LOAD_LOCAL, s.Index)
+	}
+
+	return ok
+}
+
+func (e *Emitter) Function(name string, args []string, body CompileFunc) {
+	e.Lambda(args, body)
+	e.Store(name)
+}
+
+func (e *Emitter) Lambda(args []string, body CompileFunc) {
+	funcEmitter := e.NewSubEmitter()
+	funcEmitter.enterScope()
+
+	for _, arg := range args {
+		funcEmitter.symbols.Define(arg)
+	}
+
+	body(funcEmitter)
+
+	funcEmitter.leaveScope()
+
+	fn := object.Function{
+		Value: funcEmitter.tape,
+	}
+	e.PushFunction(fn)
+}
+
+func (e *Emitter) Call(args int) {
+	e.Emit(code.CALL, args)
 }
 
 func (e *Emitter) AddInt() {

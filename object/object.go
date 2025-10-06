@@ -1,12 +1,20 @@
 package object
 
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/pspiagicw/fenc/code"
+)
+
 type CType string
 
 const (
-	INT    CType = "int"
-	FLOAT  CType = "float"
-	BOOL   CType = "bool"
-	STRING CType = "string"
+	INT      CType = "int"
+	FLOAT    CType = "float"
+	BOOL     CType = "bool"
+	STRING   CType = "string"
+	FUNCTION CType = "function"
 )
 
 type Object interface {
@@ -39,6 +47,12 @@ func CreateString(value string) Object {
 	}
 }
 
+func CreateFunction(value []code.Instruction) Object {
+	return Function{
+		Value: value,
+	}
+}
+
 type Int struct {
 	Value int
 }
@@ -47,10 +61,10 @@ func (i Int) Type() CType {
 	return INT
 }
 func (i Int) String() string {
-	return "int"
+	return strconv.Itoa(i.Value)
 }
 func (i Int) Content() string {
-	return "int"
+	return strconv.Itoa(i.Value)
 }
 
 type Float struct {
@@ -62,10 +76,10 @@ func (f Float) Type() CType {
 }
 
 func (f Float) String() string {
-	return "float"
+	return fmt.Sprintf("%f", f.Value)
 }
 func (f Float) Content() string {
-	return "float"
+	return fmt.Sprintf("%f", f.Value)
 }
 
 type Bool struct {
@@ -77,10 +91,10 @@ func (f Bool) Type() CType {
 }
 
 func (f Bool) String() string {
-	return "bool"
+	return fmt.Sprintf("%t", f.Value)
 }
 func (f Bool) Content() string {
-	return "bool"
+	return fmt.Sprintf("%t", f.Value)
 }
 
 type String struct {
@@ -92,8 +106,22 @@ func (f String) Type() CType {
 }
 
 func (f String) String() string {
-	return "string"
+	return f.Value
 }
 func (f String) Content() string {
-	return "string"
+	return f.Value
+}
+
+type Function struct {
+	Value []code.Instruction
+}
+
+func (f Function) Type() CType {
+	return FUNCTION
+}
+func (f Function) String() string {
+	return "instructions"
+}
+func (f Function) Content() string {
+	return "instructions"
 }

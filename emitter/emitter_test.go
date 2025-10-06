@@ -1,6 +1,7 @@
 package emitter
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
@@ -613,8 +614,6 @@ func TestIfStatement(t *testing.T) {
 
 	testEmitter(t, e, expected, constants)
 
-	dump.Dump(expected)
-
 }
 func TestReturn(t *testing.T) {
 	e := getEmitter()
@@ -632,16 +631,138 @@ func TestReturn(t *testing.T) {
 
 func TestCall(t *testing.T) {
 	e := getEmitter()
-	e.Call()
+	e.Call(0)
 
 	constants := []object.Object{}
 
 	expected := []code.Instruction{
-		{OpCode: code.CALL, Args: createArgs()},
+		{OpCode: code.CALL, Args: createArgs(0)},
 	}
 
 	testEmitter(t, e, expected, constants)
 }
+
+func TestGlobals(t *testing.T) {
+	e := getEmitter()
+
+	e.PushInt(2)
+	e.Store("x")
+	e.Load("x")
+
+	e.PushString("pspiagicw")
+	e.Store("name")
+	e.Load("name")
+
+	constants := []object.Object{
+		object.CreateInt(2),
+		object.CreateString("pspiagicw"),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.STORE_GLOBAL, Args: createArgs(0)},
+		{OpCode: code.LOAD_GLOBAL, Args: createArgs(0)},
+
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.STORE_GLOBAL, Args: createArgs(1)},
+		{OpCode: code.LOAD_GLOBAL, Args: createArgs(1)},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestFunctionSimple(t *testing.T) {
+	e := getEmitter()
+	e.Function("test", []string{}, func(e *Emitter) {
+		e.PushInt(2)
+	})
+	e.Load("test")
+	e.Call(0)
+
+	constants := []object.Object{
+		object.CreateInt(2),
+		object.CreateFunction([]code.Instruction{
+			{OpCode: code.PUSH, Args: createArgs(0)},
+		}),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.STORE_GLOBAL, Args: createArgs(0)},
+		{OpCode: code.LOAD_GLOBAL, Args: createArgs(0)},
+		{OpCode: code.CALL, Args: createArgs(0)},
+	}
+
+	testEmitter(t, e, expected, constants)
+
+}
+func TestFunctionWithArg(t *testing.T) {
+	e := getEmitter()
+	e.Function("add", []string{"x", "y"}, func(e *Emitter) {
+		e.Load("x")
+		e.Load("y")
+		e.AddInt()
+		e.Store("z")
+		e.Load("z")
+		e.Return()
+	})
+
+	constants := []object.Object{
+		object.CreateFunction([]code.Instruction{
+			{OpCode: code.LOAD_LOCAL, Args: createArgs(0)},
+			{OpCode: code.LOAD_LOCAL, Args: createArgs(1)},
+			{OpCode: code.ADD_INT},
+			{OpCode: code.STORE_LOCAL, Args: createArgs(2)},
+			{OpCode: code.LOAD_LOCAL, Args: createArgs(2)},
+			{OpCode: code.RETURN},
+		}),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.STORE_GLOBAL, Args: createArgs(0)},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+func TestLambda(t *testing.T) {
+	e := getEmitter()
+	e.Lambda([]string{}, func(e *Emitter) {
+		e.PushInt(1)
+	})
+
+	constants := []object.Object{
+		object.CreateInt(1),
+		object.CreateFunction([]code.Instruction{
+			{OpCode: code.PUSH, Args: createArgs(0)},
+		}),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(1)},
+	}
+
+	testEmitter(t, e, expected, constants)
+
+}
+
+// TODO: Find out why is this not working!
+// func TestFunctionWithLambdaReturn(t *testing.T) {
+// 	e := getEmitter()
+// 	e.Function("adder", []string{"x"}, func(e *Emitter) {
+// 		e.Lambda([]string{"y"}, func(e *Emitter) {
+// 			e.Load("x")
+// 			e.Load("y")
+// 			e.AddInt()
+// 			e.Return()
+// 		})
+// 		e.Return()
+// 	})
+// 	fmt.Println("CONSTANTS")
+// 	dump.Constants(e.constants.constants)
+// 	fmt.Println("TAPE")
+// 	dump.Dump(e.tape)
+// }
 
 func createArgs(args ...int) []int {
 	return args
@@ -654,6 +775,6 @@ func getEmitter() *Emitter {
 }
 
 func testEmitter(t *testing.T, e *Emitter, expected []code.Instruction, constants []object.Object) {
-	assert.Equal(t, constants, e.constants, "Constant pool not equal!")
+	assert.Equal(t, constants, e.constants.constants, "Constant pool not equal!")
 	assert.Equal(t, expected, e.tape, "Instructions on tape differ!")
 }

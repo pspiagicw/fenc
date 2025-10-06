@@ -49,6 +49,12 @@ const (
 
 	RETURN
 	CALL
+
+	STORE_GLOBAL
+	LOAD_GLOBAL
+
+	STORE_LOCAL
+	LOAD_LOCAL
 )
 
 type Instruction struct {
