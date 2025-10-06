@@ -88,6 +88,9 @@ func (e *Emitter) If(cond, consequence, alternative CompileFunc) {
 	}
 
 }
+func (e *Emitter) Return() {
+	e.Emit(code.RETURN)
+}
 
 func (e *Emitter) Patch(jumpPos int) {
 	ins := e.tape[jumpPos]

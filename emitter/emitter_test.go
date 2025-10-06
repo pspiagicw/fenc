@@ -616,6 +616,19 @@ func TestIfStatement(t *testing.T) {
 	dump.Dump(expected)
 
 }
+func TestReturn(t *testing.T) {
+	e := getEmitter()
+	e.Return()
+
+	constants := []object.Object{}
+
+	expected := []code.Instruction{
+		{OpCode: code.RETURN, Args: createArgs()},
+	}
+
+	testEmitter(t, e, expected, constants)
+
+}
 
 func createArgs(args ...int) []int {
 	return args
