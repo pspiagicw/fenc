@@ -5,6 +5,7 @@ import (
 
 	"github.com/alecthomas/assert/v2"
 	"github.com/pspiagicw/fenc/code"
+	"github.com/pspiagicw/fenc/dump"
 	"github.com/pspiagicw/fenc/object"
 )
 
@@ -572,6 +573,50 @@ func TestNEqString(t *testing.T) {
 
 	testEmitter(t, e, expected, constants)
 }
+
+func TestIfStatement(t *testing.T) {
+	e := getEmitter()
+	e.If(
+		func(e *Emitter) {
+			e.PushInt(1)
+			e.PushInt(2)
+			e.LtInt()
+		},
+		func(e *Emitter) {
+			e.PushInt(10)
+		},
+		func(e *Emitter) {
+			e.PushInt(20)
+		},
+	)
+
+	constants := []object.Object{
+		object.CreateInt(1),
+		object.CreateInt(2),
+		object.CreateInt(10),
+		object.CreateInt(20),
+	}
+
+	expected := []code.Instruction{
+		{OpCode: code.PUSH, Args: createArgs(0)},       // 0000
+		{OpCode: code.PUSH, Args: createArgs(1)},       // 0001
+		{OpCode: code.LT_INT},                          // 0002
+		{OpCode: code.JUMP_FALSE, Args: createArgs(6)}, // 0003
+
+		// --- Consequence --
+		{OpCode: code.PUSH, Args: createArgs(2)}, // 0004
+		{OpCode: code.JUMP, Args: createArgs(7)}, // 0005
+
+		// -- Alternaitve --
+		{OpCode: code.PUSH, Args: createArgs(3)}, // 0006
+	}
+
+	testEmitter(t, e, expected, constants)
+
+	dump.Dump(expected)
+
+}
+
 func createArgs(args ...int) []int {
 	return args
 }

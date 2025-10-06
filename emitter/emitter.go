@@ -3,7 +3,10 @@ package emitter
 import (
 	"github.com/pspiagicw/fenc/code"
 	"github.com/pspiagicw/fenc/object"
+	"github.com/pspiagicw/goreland"
 )
+
+type CompileFunc func(*Emitter)
 
 type Emitter struct {
 	tape          []code.Instruction
@@ -21,12 +24,14 @@ func NewEmitter() *Emitter {
 	}
 }
 
-func (e *Emitter) Emit(op code.Op, args ...int) {
+func (e *Emitter) Emit(op code.Op, args ...int) int {
 	ins := code.Instruction{
 		OpCode: op,
 		Args:   args,
 	}
 	e.tape = append(e.tape, ins)
+	e.tapeIndex += 1
+	return e.tapeIndex - 1
 }
 
 func (e *Emitter) Constant(o object.Object) int {
@@ -58,6 +63,41 @@ func (e *Emitter) PushString(value string) {
 	o := object.CreateString(value)
 	index := e.Constant(o)
 	e.Emit(code.PUSH, index)
+}
+
+func (e *Emitter) If(cond, consequence, alternative CompileFunc) {
+
+	// Emit the condition
+	cond(e)
+
+	condPos := e.Emit(code.JUMP_FALSE, 0)
+
+	consequence(e)
+
+	jumpEndPos := -1
+	if alternative != nil {
+		jumpEndPos = e.Emit(code.JUMP, 0)
+	}
+
+	e.Patch(condPos)
+
+	if alternative != nil {
+		alternative(e)
+
+		e.Patch(jumpEndPos)
+	}
+
+}
+
+func (e *Emitter) Patch(jumpPos int) {
+	ins := e.tape[jumpPos]
+	if ins.OpCode != code.JUMP && ins.OpCode != code.JUMP_FALSE {
+		goreland.LogFatal("Given instructions is not a jump instruction.")
+	}
+
+	ins.Args = []int{e.tapeIndex}
+
+	e.tape[jumpPos] = ins
 }
 
 func (e *Emitter) AddInt() {

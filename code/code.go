@@ -1,9 +1,11 @@
 package code
 
+//go:generate stringer -type=Op
+
 type Op int
 
 const (
-	_ = iota
+	_ Op = iota
 	PUSH
 	ADD_INT
 	SUB_INT
@@ -41,6 +43,9 @@ const (
 	GTE_FLOAT
 
 	ADD_STRING
+
+	JUMP
+	JUMP_FALSE
 )
 
 type Instruction struct {
