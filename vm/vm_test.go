@@ -9,7 +9,6 @@ import (
 )
 
 func TestPush(t *testing.T) {
-	t.Skip()
 	e := emitter.NewEmitter()
 	e.PushInt(1)
 
@@ -17,6 +16,257 @@ func TestPush(t *testing.T) {
 
 	testVM(t, e, expected)
 }
+
+func TestAdd(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(1)
+	e.PushInt(1)
+	e.AddInt()
+
+	expected := object.CreateInt(2)
+	testVM(t, e, expected)
+}
+
+// ==========================
+// Integer arithmetic
+// ==========================
+
+func TestAddInt(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(2)
+	e.PushInt(3)
+	e.AddInt()
+	testVM(t, e, object.CreateInt(5))
+}
+
+func TestSubInt(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(5)
+	e.PushInt(3)
+	e.SubInt()
+	testVM(t, e, object.CreateInt(2))
+}
+
+func TestMulInt(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(4)
+	e.PushInt(3)
+	e.MulInt()
+	testVM(t, e, object.CreateInt(12))
+}
+
+func TestDivInt(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(10)
+	e.PushInt(2)
+	e.DivInt()
+	testVM(t, e, object.CreateInt(5))
+}
+
+// ==========================
+// Integer comparisons
+// ==========================
+
+func TestLtInt(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(2)
+	e.PushInt(5)
+	e.LtInt()
+	testVM(t, e, object.CreateBool(true))
+}
+
+func TestLteInt(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(5)
+	e.PushInt(5)
+	e.LteInt()
+	testVM(t, e, object.CreateBool(true))
+}
+
+func TestGtInt(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(6)
+	e.PushInt(4)
+	e.GtInt()
+	testVM(t, e, object.CreateBool(true))
+}
+
+func TestGteInt(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(5)
+	e.PushInt(5)
+	e.GteInt()
+	testVM(t, e, object.CreateBool(true))
+}
+
+func TestEqInt(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(7)
+	e.PushInt(7)
+	e.Eq()
+	testVM(t, e, object.CreateBool(true))
+}
+
+func TestNeqInt(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(8)
+	e.PushInt(9)
+	e.Neq()
+	testVM(t, e, object.CreateBool(true))
+}
+
+// ==========================
+// Float arithmetic
+// ==========================
+
+func TestAddFloat(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushFloat(1.5)
+	e.PushFloat(2.5)
+	e.AddFloat()
+	testVM(t, e, object.CreateFloat(4.0))
+}
+
+func TestSubFloat(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushFloat(5.5)
+	e.PushFloat(2.5)
+	e.SubFloat()
+	testVM(t, e, object.CreateFloat(3.0))
+}
+
+func TestMulFloat(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushFloat(2.0)
+	e.PushFloat(4.0)
+	e.MulFloat()
+	testVM(t, e, object.CreateFloat(8.0))
+}
+
+func TestDivFloat(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushFloat(27.0)
+	e.PushFloat(9.0)
+	e.DivFloat()
+	testVM(t, e, object.CreateFloat(3.0))
+}
+
+// ==========================
+// Float comparisons
+// ==========================
+
+func TestLtFloat(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushFloat(1.2)
+	e.PushFloat(2.4)
+	e.LtFloat()
+	testVM(t, e, object.CreateBool(true))
+}
+
+func TestLteFloat(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushFloat(3.3)
+	e.PushFloat(3.3)
+	e.LteFloat()
+	testVM(t, e, object.CreateBool(true))
+}
+
+func TestGtFloat(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushFloat(4.5)
+	e.PushFloat(3.2)
+	e.GtFloat()
+	testVM(t, e, object.CreateBool(true))
+}
+
+func TestGteFloat(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushFloat(3.5)
+	e.PushFloat(3.5)
+	e.GteFloat()
+	testVM(t, e, object.CreateBool(true))
+}
+
+func TestEqFloat(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushFloat(2.5)
+	e.PushFloat(2.5)
+	e.Eq()
+	testVM(t, e, object.CreateBool(true))
+}
+
+func TestNeqFloat(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushFloat(2.5)
+	e.PushFloat(3.5)
+	e.Neq()
+	testVM(t, e, object.CreateBool(true))
+}
+
+// ==========================
+// Boolean logic
+// ==========================
+
+func TestAndBool(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushBool(false)
+	e.PushBool(true)
+	e.AndBool()
+	testVM(t, e, object.CreateBool(false))
+}
+
+func TestOrBool(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushBool(true)
+	e.PushBool(false)
+	e.OrBool()
+	testVM(t, e, object.CreateBool(true))
+}
+
+func TestEqBool(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushBool(false)
+	e.PushBool(true)
+	e.Eq()
+	testVM(t, e, object.CreateBool(false))
+}
+
+func TestNeqBool(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushBool(true)
+	e.PushBool(false)
+	e.Neq()
+	testVM(t, e, object.CreateBool(true))
+}
+
+// ==========================
+// String operations
+// ==========================
+
+func TestAddString(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushString("Hello, ")
+	e.PushString("World!")
+	e.AddString()
+	testVM(t, e, object.CreateString("Hello, World!"))
+}
+
+func TestEqString(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushString("foo")
+	e.PushString("foo")
+	e.Eq()
+	testVM(t, e, object.CreateBool(true))
+}
+
+func TestNeqString(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushString("foo")
+	e.PushString("bar")
+	e.Neq()
+	testVM(t, e, object.CreateBool(true))
+}
+
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 	vm := NewVM(e)
 

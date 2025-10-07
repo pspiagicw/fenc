@@ -17,19 +17,10 @@ const (
 	GT_INT
 	GTE_INT
 
-	// EQ_INT
-	// NEQ_INT
-
 	ADD_FLOAT
 	SUB_FLOAT
 	MUL_FLOAT
 	DIV_FLOAT
-
-	// EQ_FLOAT
-	// NEQ_FLOAT
-
-	// EQ_BOOL
-	// NEQ_BOOL
 
 	AND_BOOL
 	OR_BOOL

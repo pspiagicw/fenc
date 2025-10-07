@@ -32,6 +32,7 @@ type SymbolScope string
 const (
 	GLOBAL_SCOPE SymbolScope = "GLOBAL"
 	LOCAL_SCOPE  SymbolScope = "LOCAL"
+	FREE_SCOPE   SymbolScope = "FREE"
 )
 
 func (s *SymbolTable) Define(name string) Symbol {

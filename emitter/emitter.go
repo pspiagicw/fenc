@@ -37,8 +37,8 @@ func NewEmitter() *Emitter {
 		symbols:   NewSymbolTable(),
 	}
 }
-func (e *Emitter) Bytecode() []code.Instruction {
-	return e.tape
+func (e *Emitter) Bytecode() ([]code.Instruction, []object.Object) {
+	return e.tape, e.constants.constants
 }
 
 func (e *Emitter) Emit(op code.Op, args ...int) int {
