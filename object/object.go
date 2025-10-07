@@ -15,6 +15,7 @@ const (
 	BOOL     CType = "bool"
 	STRING   CType = "string"
 	FUNCTION CType = "function"
+	CLOSURE  CType = "CLOSURE"
 )
 
 type Object interface {
@@ -124,4 +125,19 @@ func (f Function) String() string {
 }
 func (f Function) Content() string {
 	return "instructions"
+}
+
+type Closure struct {
+	Value Function
+	Free  []Object
+}
+
+func (c Closure) Type() CType {
+	return CLOSURE
+}
+func (c Closure) Inspect() string {
+	return "closure"
+}
+func (c Closure) Content() string {
+	return "closure"
 }

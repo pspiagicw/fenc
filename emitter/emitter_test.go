@@ -626,6 +626,18 @@ func TestReturn(t *testing.T) {
 	testEmitter(t, e, expected, constants)
 
 }
+func TestReturnValue(t *testing.T) {
+	e := getEmitter()
+	e.ReturnValue()
+
+	constants := []object.Object{}
+
+	expected := []code.Instruction{
+		{OpCode: code.RETURN_VALUE, Args: createArgs()},
+	}
+
+	testEmitter(t, e, expected, constants)
+}
 
 func TestCall(t *testing.T) {
 	e := getEmitter()
@@ -685,7 +697,7 @@ func TestFunctionSimple(t *testing.T) {
 	}
 
 	expected := []code.Instruction{
-		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.CLOSURE, Args: createArgs(1, 0)},
 		{OpCode: code.STORE_GLOBAL, Args: createArgs(0)},
 		{OpCode: code.LOAD_GLOBAL, Args: createArgs(0)},
 		{OpCode: code.CALL, Args: createArgs(0)},
@@ -702,7 +714,7 @@ func TestFunctionWithArg(t *testing.T) {
 		e.AddInt()
 		e.Store("z")
 		e.Load("z")
-		e.Return()
+		e.ReturnValue()
 	})
 
 	constants := []object.Object{
@@ -712,12 +724,12 @@ func TestFunctionWithArg(t *testing.T) {
 			{OpCode: code.ADD_INT},
 			{OpCode: code.STORE_LOCAL, Args: createArgs(2)},
 			{OpCode: code.LOAD_LOCAL, Args: createArgs(2)},
-			{OpCode: code.RETURN},
+			{OpCode: code.RETURN_VALUE},
 		}),
 	}
 
 	expected := []code.Instruction{
-		{OpCode: code.PUSH, Args: createArgs(0)},
+		{OpCode: code.CLOSURE, Args: createArgs(0, 0)},
 		{OpCode: code.STORE_GLOBAL, Args: createArgs(0)},
 	}
 
@@ -737,7 +749,7 @@ func TestLambda(t *testing.T) {
 	}
 
 	expected := []code.Instruction{
-		{OpCode: code.PUSH, Args: createArgs(1)},
+		{OpCode: code.CLOSURE, Args: createArgs(1, 0)},
 	}
 
 	testEmitter(t, e, expected, constants)
@@ -762,8 +774,156 @@ func TestLambda(t *testing.T) {
 // 	dump.Dump(e.tape)
 // }
 
+func TestClosure(t *testing.T) {
+	e := getEmitter()
+	e.Lambda([]string{"a"}, func(e *Emitter) {
+		e.Lambda([]string{"b"}, func(e *Emitter) {
+			e.Load("a")
+			e.Load("b")
+			e.AddInt()
+			e.ReturnValue()
+		})
+		e.Return()
+	})
+
+	constants := []object.Object{
+		object.CreateFunction([]code.Instruction{
+			{OpCode: code.LOAD_FREE, Args: createArgs(0)},
+			{OpCode: code.LOAD_LOCAL, Args: createArgs(0)},
+			{OpCode: code.ADD_INT},
+			{OpCode: code.RETURN_VALUE},
+		}),
+		object.CreateFunction([]code.Instruction{
+			{OpCode: code.LOAD_LOCAL, Args: createArgs(0)},
+			{OpCode: code.CLOSURE, Args: createArgs(0, 1)},
+			{OpCode: code.RETURN},
+		}),
+	}
+
+	expected := []code.Instruction{
+		createInstruction(code.CLOSURE, 1, 0),
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestNestedClosure(t *testing.T) {
+	e := getEmitter()
+	e.Lambda([]string{"a"}, func(e *Emitter) {
+		e.Lambda([]string{"b"}, func(e *Emitter) {
+			e.Lambda([]string{"c"}, func(e *Emitter) {
+				e.Load("a")
+				e.Load("b")
+				e.AddInt()
+				e.Load("c")
+				e.AddInt()
+				e.ReturnValue()
+			})
+		})
+	})
+
+	constants := []object.Object{
+		object.CreateFunction([]code.Instruction{
+			createInstruction(code.LOAD_FREE, 0),
+			createInstruction(code.LOAD_FREE, 1),
+			createInstruction(code.ADD_INT),
+			createInstruction(code.LOAD_LOCAL, 0),
+			createInstruction(code.ADD_INT),
+			createInstruction(code.RETURN_VALUE),
+		}),
+		object.CreateFunction([]code.Instruction{
+			createInstruction(code.LOAD_FREE, 0),
+			createInstruction(code.LOAD_LOCAL, 0),
+			createInstruction(code.CLOSURE, 0, 2),
+			createInstruction(code.RETURN_VALUE),
+		}),
+		object.CreateFunction([]code.Instruction{
+			createInstruction(code.LOAD_LOCAL, 0),
+			createInstruction(code.CLOSURE, 1, 1),
+			createInstruction(code.RETURN_VALUE),
+		}),
+	}
+
+	expected := []code.Instruction{
+		createInstruction(code.CLOSURE, 2, 0),
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestClosureComplex(t *testing.T) {
+	e := getEmitter()
+	e.PushInt(55)
+	e.Store("global")
+	e.Lambda([]string{}, func(e *Emitter) {
+		e.PushInt(66)
+		e.Store("a")
+		e.Lambda([]string{}, func(e *Emitter) {
+			e.PushInt(77)
+			e.Store("b")
+			e.Lambda([]string{}, func(e *Emitter) {
+				e.PushInt(88)
+				e.Store("c")
+				e.Load("global")
+				e.Load("a")
+				e.AddInt()
+				e.Load("b")
+				e.AddInt()
+				e.Load("c")
+				e.AddInt()
+				e.ReturnValue()
+			})
+		})
+	})
+
+	constants := []object.Object{
+		object.CreateInt(55),
+		object.CreateInt(66),
+		object.CreateInt(77),
+		object.CreateInt(88),
+		object.CreateFunction([]code.Instruction{
+			createInstruction(code.PUSH, 3),
+			createInstruction(code.STORE_LOCAL, 0),
+			createInstruction(code.LOAD_GLOBAL, 0),
+			createInstruction(code.LOAD_FREE, 0),
+			createInstruction(code.ADD_INT),
+			createInstruction(code.LOAD_FREE, 1),
+			createInstruction(code.ADD_INT),
+			createInstruction(code.LOAD_LOCAL, 0),
+			createInstruction(code.ADD_INT),
+			createInstruction(code.RETURN_VALUE),
+		}),
+		object.CreateFunction([]code.Instruction{
+			createInstruction(code.PUSH, 2),
+			createInstruction(code.STORE_LOCAL, 0),
+			createInstruction(code.LOAD_FREE, 0),
+			createInstruction(code.LOAD_LOCAL, 0),
+			createInstruction(code.CLOSURE, 4, 2),
+			createInstruction(code.RETURN_VALUE),
+		}),
+		object.CreateFunction([]code.Instruction{
+			createInstruction(code.PUSH, 1),
+			createInstruction(code.STORE_LOCAL, 0),
+			createInstruction(code.LOAD_LOCAL, 0),
+			createInstruction(code.CLOSURE, 5, 1),
+			createInstruction(code.RETURN_VALUE),
+		}),
+	}
+
+	expected := []code.Instruction{
+		createInstruction(code.PUSH, 0),
+		createInstruction(code.STORE_GLOBAL, 0),
+		createInstruction(code.CLOSURE, 6, 0),
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
 func createArgs(args ...int) []int {
 	return args
+}
+func createInstruction(op code.Op, args ...int) code.Instruction {
+	return code.Instruction{OpCode: op, Args: args}
 }
 
 func getEmitter() *Emitter {

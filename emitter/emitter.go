@@ -167,7 +167,12 @@ func (e *Emitter) Lambda(args []string, body CompileFunc) {
 	fn := object.Function{
 		Value: funcEmitter.tape,
 	}
-	e.PushFunction(fn)
+	// e.PushFunction(fn)
+	index := e.Constant(fn)
+	e.Emit(code.CLOSURE, index, 0)
+}
+func (e *Emitter) ReturnValue() {
+	e.Emit(code.RETURN_VALUE)
 }
 
 func (e *Emitter) Call(args int) {

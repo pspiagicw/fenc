@@ -48,6 +48,7 @@ const (
 	JUMP_FALSE
 
 	RETURN
+	RETURN_VALUE
 	CALL
 
 	STORE_GLOBAL
@@ -55,6 +56,9 @@ const (
 
 	STORE_LOCAL
 	LOAD_LOCAL
+	LOAD_FREE
+
+	CLOSURE
 )
 
 type Instruction struct {

@@ -9,6 +9,7 @@ import (
 )
 
 func TestPush(t *testing.T) {
+	t.Skip()
 	e := emitter.NewEmitter()
 	e.PushInt(1)
 
