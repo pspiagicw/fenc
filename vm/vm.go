@@ -17,6 +17,7 @@ type VM struct {
 	stack      []object.Object
 	stackIndex int
 	constants  []object.Object
+	globals    map[int]object.Object
 }
 
 func NewVM(e *emitter.Emitter) *VM {
@@ -27,6 +28,7 @@ func NewVM(e *emitter.Emitter) *VM {
 		stack:      make([]object.Object, StackSize),
 		stackIndex: 0,
 		constants:  constants,
+		globals:    map[int]object.Object{},
 	}
 }
 func (vm *VM) Run() {
@@ -81,11 +83,23 @@ func (vm *VM) Run() {
 			vm.Jump(ins.Args[0])
 		case code.JUMP_FALSE:
 			vm.JumpFalse(ins.Args[0])
+		case code.STORE_GLOBAL:
+			vm.Store(ins.Args[0])
+		case code.LOAD_GLOBAL:
+			vm.Load(ins.Args[0])
 		default:
 			goreland.LogError("Invalid Op: %s", ins.OpCode)
 		}
 		vm.ip += 1
 	}
+}
+func (vm *VM) Store(id int) {
+	o := vm.Pop()
+	vm.globals[id] = o
+}
+func (vm *VM) Load(id int) {
+	val := vm.globals[id]
+	vm.Push(val)
 }
 func (vm *VM) Jump(pos int) {
 	vm.ip = pos - 1

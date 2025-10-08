@@ -346,6 +346,66 @@ func TestIf_Nested(t *testing.T) {
 	testVM(t, e, object.CreateInt(222))
 }
 
+func TestGlobalIntStoreLoad(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(42)
+	e.Store("x")
+	e.PushInt(10)
+	e.Load("x")
+
+	expected := object.CreateInt(42)
+	testVM(t, e, expected)
+}
+
+// update existing variable
+func TestGlobalVariableOverwrite(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(10)
+	e.Store("x")
+	e.PushInt(99)
+	e.Store("x")
+	e.PushInt(10)
+	e.Load("x")
+
+	expected := object.CreateInt(99)
+	testVM(t, e, expected)
+}
+
+// multiple variables at once
+func TestGlobalMultipleVariables(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(7)
+	e.Store("a")
+	e.PushInt(8)
+	e.Store("b")
+
+	e.PushInt(2)
+	e.Load("a")
+	e.Load("b")
+	e.AddInt()
+
+	expected := object.CreateInt(15)
+	testVM(t, e, expected)
+}
+
+// variable reuse and reassign after computation
+func TestGlobalReuseAfterComputation(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(5)
+	e.Store("x")
+	e.PushInt(3)
+
+	e.Load("x")
+	e.PushInt(3)
+	e.AddInt()
+	e.Store("x")
+	e.PushInt(999)
+
+	e.Load("x")
+
+	expected := object.CreateInt(8)
+	testVM(t, e, expected)
+}
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 	vm := NewVM(e)
 
