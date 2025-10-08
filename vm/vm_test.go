@@ -267,6 +267,85 @@ func TestNeqString(t *testing.T) {
 	testVM(t, e, object.CreateBool(true))
 }
 
+func TestIf(t *testing.T) {
+	e := emitter.NewEmitter()
+
+	e.If(
+		func(e *emitter.Emitter) {
+			e.PushBool(true)
+		},
+		func(e *emitter.Emitter) {
+			e.PushInt(10)
+		},
+		func(e *emitter.Emitter) {
+			e.PushInt(99)
+		},
+	)
+
+	testVM(t, e, object.CreateInt(10))
+}
+
+func TestIf_FalseBranch(t *testing.T) {
+	e := emitter.NewEmitter()
+
+	e.If(
+		func(e *emitter.Emitter) { // condition
+			e.PushBool(false)
+		},
+		func(e *emitter.Emitter) { // then
+			e.PushInt(10)
+		},
+		func(e *emitter.Emitter) { // else
+			e.PushInt(99)
+		},
+	)
+
+	testVM(t, e, object.CreateInt(99))
+}
+func TestIf_True_NoElse(t *testing.T) {
+	e := emitter.NewEmitter()
+
+	e.If(
+		func(e *emitter.Emitter) { // condition
+			e.PushBool(true)
+		},
+		func(e *emitter.Emitter) { // then
+			e.PushInt(42)
+		},
+		nil, // no else
+	)
+
+	testVM(t, e, object.CreateInt(42))
+}
+
+func TestIf_Nested(t *testing.T) {
+	e := emitter.NewEmitter()
+
+	e.If(
+		func(e *emitter.Emitter) { // outer condition
+			e.PushBool(true)
+		},
+		func(e *emitter.Emitter) { // outer then
+			e.If(
+				func(e *emitter.Emitter) { // inner condition
+					e.PushBool(false)
+				},
+				func(e *emitter.Emitter) { // inner then
+					e.PushInt(111)
+				},
+				func(e *emitter.Emitter) { // inner else
+					e.PushInt(222)
+				},
+			)
+		},
+		func(e *emitter.Emitter) { // outer else
+			e.PushInt(333)
+		},
+	)
+
+	testVM(t, e, object.CreateInt(222))
+}
+
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 	vm := NewVM(e)
 

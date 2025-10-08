@@ -77,13 +77,26 @@ func (vm *VM) Run() {
 			vm.Eq()
 		case code.ADD_STRING:
 			vm.AddString()
+		case code.JUMP:
+			vm.Jump(ins.Args[0])
+		case code.JUMP_FALSE:
+			vm.JumpFalse(ins.Args[0])
 		default:
 			goreland.LogError("Invalid Op: %s", ins.OpCode)
 		}
 		vm.ip += 1
 	}
 }
+func (vm *VM) Jump(pos int) {
+	vm.ip = pos - 1
+}
 
+func (vm *VM) JumpFalse(pos int) {
+	v := vm.PopBool()
+	if v.Value == false {
+		vm.Jump(pos)
+	}
+}
 func (vm *VM) AddFloat() {
 	r := vm.PopFloat()
 	l := vm.PopFloat()
