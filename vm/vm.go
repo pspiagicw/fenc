@@ -10,30 +10,59 @@ import (
 )
 
 const StackSize = 2048
+const MaxFrames = 256
+
+type Frame struct {
+	tape []code.Instruction
+	ip   int
+}
 
 type VM struct {
-	ip         int
-	tape       []code.Instruction
-	stack      []object.Object
-	stackIndex int
-	constants  []object.Object
-	globals    map[int]object.Object
+	// ip           int
+	// tape         []code.Instruction
+	frames       []*Frame
+	framePointer int
+	stack        []object.Object
+	stackPointer int
+	constants    []object.Object
+	globals      map[int]object.Object
+}
+
+func NewFrame(tape []code.Instruction) *Frame {
+	return &Frame{
+		tape: tape,
+		ip:   0,
+	}
+}
+
+func (vm *VM) currentFrame() *Frame {
+	return vm.frames[vm.framePointer]
+}
+
+func (vm *VM) popFrame() *Frame {
+	vm.framePointer -= 1
+	return vm.frames[vm.framePointer]
+}
+func (vm *VM) pushFrame(f *Frame) {
+	vm.frames[vm.framePointer] = f
+	vm.framePointer++
 }
 
 func NewVM(e *emitter.Emitter) *VM {
 	instructions, constants := e.Bytecode()
+	frames := make([]*Frame, MaxFrames)
+	frames[0] = NewFrame(instructions)
 	return &VM{
-		tape:       instructions,
-		ip:         0,
-		stack:      make([]object.Object, StackSize),
-		stackIndex: 0,
-		constants:  constants,
-		globals:    map[int]object.Object{},
+		frames:       frames,
+		stack:        make([]object.Object, StackSize),
+		stackPointer: 0,
+		constants:    constants,
+		globals:      map[int]object.Object{},
 	}
 }
 func (vm *VM) Run() {
-	for vm.ip < len(vm.tape) {
-		ins := vm.tape[vm.ip]
+	for vm.currentFrame().ip < len(vm.currentFrame().tape) {
+		ins := vm.currentFrame().tape[vm.currentFrame().ip]
 		switch ins.OpCode {
 		case code.PUSH:
 			vm.PushConstant(ins.Args[0])
@@ -90,7 +119,7 @@ func (vm *VM) Run() {
 		default:
 			goreland.LogError("Invalid Op: %s", ins.OpCode)
 		}
-		vm.ip += 1
+		vm.currentFrame().ip += 1
 	}
 }
 func (vm *VM) Store(id int) {
@@ -102,7 +131,7 @@ func (vm *VM) Load(id int) {
 	vm.Push(val)
 }
 func (vm *VM) Jump(pos int) {
-	vm.ip = pos - 1
+	vm.currentFrame().ip = pos - 1
 }
 
 func (vm *VM) JumpFalse(pos int) {
@@ -248,8 +277,11 @@ func (vm *VM) LteFloat() {
 }
 
 func (vm *VM) Pop() object.Object {
-	o := vm.stack[vm.stackIndex-1]
-	vm.stackIndex -= 1
+	if vm.stackPointer < 0 {
+		goreland.LogFatal("Stack underflow!")
+	}
+	o := vm.stack[vm.stackPointer-1]
+	vm.stackPointer -= 1
 	return o
 }
 func (vm *VM) PopInt() object.Int {
@@ -290,12 +322,12 @@ func (vm *VM) getConstant(index int) object.Object {
 }
 
 func (vm *VM) Push(o object.Object) {
-	if vm.stackIndex > StackSize {
+	if vm.stackPointer > StackSize {
 		goreland.LogFatal("Stack Overflow!")
 	}
 
-	vm.stack[vm.stackIndex] = o
-	vm.stackIndex += 1
+	vm.stack[vm.stackPointer] = o
+	vm.stackPointer += 1
 }
 func (vm *VM) PushConstant(index int) {
 	o := vm.getConstant(index)
@@ -304,5 +336,5 @@ func (vm *VM) PushConstant(index int) {
 
 }
 func (vm *VM) Peek() object.Object {
-	return vm.stack[vm.stackIndex-1]
+	return vm.stack[vm.stackPointer-1]
 }
