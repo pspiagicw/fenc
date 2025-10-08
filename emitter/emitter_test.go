@@ -775,7 +775,6 @@ func TestLambda(t *testing.T) {
 // }
 
 func TestClosure(t *testing.T) {
-	t.Skip()
 	e := getEmitter()
 	e.Lambda([]string{"a"}, func(e *Emitter) {
 		e.Lambda([]string{"b"}, func(e *Emitter) {
@@ -809,7 +808,6 @@ func TestClosure(t *testing.T) {
 }
 
 func TestNestedClosure(t *testing.T) {
-	t.Skip()
 	e := getEmitter()
 	e.Lambda([]string{"a"}, func(e *Emitter) {
 		e.Lambda([]string{"b"}, func(e *Emitter) {
@@ -821,7 +819,9 @@ func TestNestedClosure(t *testing.T) {
 				e.AddInt()
 				e.ReturnValue()
 			})
+			e.ReturnValue()
 		})
+		e.ReturnValue()
 	})
 
 	constants := []object.Object{
@@ -854,7 +854,6 @@ func TestNestedClosure(t *testing.T) {
 }
 
 func TestClosureComplex(t *testing.T) {
-	t.Skip()
 	e := getEmitter()
 	e.PushInt(55)
 	e.Store("global")
@@ -876,7 +875,9 @@ func TestClosureComplex(t *testing.T) {
 				e.AddInt()
 				e.ReturnValue()
 			})
+			e.ReturnValue()
 		})
+		e.ReturnValue()
 	})
 
 	constants := []object.Object{

@@ -5,6 +5,7 @@ type SymbolTable struct {
 
 	store      map[string]Symbol
 	storeIndex int
+	Free       []Symbol
 }
 
 func NewSymbolTable() *SymbolTable {
@@ -12,6 +13,7 @@ func NewSymbolTable() *SymbolTable {
 		Outer:      nil,
 		store:      map[string]Symbol{},
 		storeIndex: 0,
+		Free:       []Symbol{},
 	}
 }
 
@@ -50,6 +52,25 @@ func (s *SymbolTable) Resolve(name string) (Symbol, bool) {
 	obj, ok := s.store[name]
 	if !ok && s.Outer != nil {
 		obj, ok = s.Outer.Resolve(name)
+		if !ok {
+			return obj, ok
+		}
+
+		if obj.Scope == GLOBAL_SCOPE {
+			return obj, ok
+		}
+
+		free := s.defineFree(obj)
+		return free, true
 	}
 	return obj, ok
+}
+func (s *SymbolTable) defineFree(original Symbol) Symbol {
+	s.Free = append(s.Free, original)
+
+	symbol := Symbol{Name: original.Name, Index: len(s.Free) - 1}
+	symbol.Scope = FREE_SCOPE
+
+	s.store[original.Name] = symbol
+	return symbol
 }

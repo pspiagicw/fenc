@@ -142,6 +142,8 @@ func (e *Emitter) Load(name string) bool {
 		e.Emit(code.LOAD_GLOBAL, s.Index)
 	case LOCAL_SCOPE:
 		e.Emit(code.LOAD_LOCAL, s.Index)
+	case FREE_SCOPE:
+		e.Emit(code.LOAD_FREE, s.Index)
 	}
 
 	return ok
@@ -162,14 +164,19 @@ func (e *Emitter) Lambda(args []string, body CompileFunc) {
 
 	body(funcEmitter)
 
+	freeSymbols := funcEmitter.symbols.Free
 	funcEmitter.leaveScope()
+
+	for _, s := range freeSymbols {
+		e.Load(s.Name)
+	}
 
 	fn := object.Function{
 		Value: funcEmitter.tape,
 	}
 	// e.PushFunction(fn)
 	index := e.Constant(fn)
-	e.Emit(code.CLOSURE, index, 0)
+	e.Emit(code.CLOSURE, index, len(freeSymbols))
 }
 func (e *Emitter) ReturnValue() {
 	e.Emit(code.RETURN_VALUE)
