@@ -150,7 +150,29 @@ func (e *Emitter) Load(name string) bool {
 }
 
 func (e *Emitter) Function(name string, args []string, body CompileFunc) {
-	e.Lambda(args, body)
+	funcEmitter := e.NewSubEmitter()
+	funcEmitter.enterScope()
+	funcEmitter.symbols.Define(name)
+
+	for _, arg := range args {
+		funcEmitter.symbols.Define(arg)
+	}
+
+	body(funcEmitter)
+
+	freeSymbols := funcEmitter.symbols.Free
+	funcEmitter.leaveScope()
+
+	for _, s := range freeSymbols {
+		e.Load(s.Name)
+	}
+
+	fn := object.Function{
+		Value: funcEmitter.tape,
+	}
+	// e.PushFunction(fn)
+	index := e.Constant(fn)
+	e.Emit(code.CLOSURE, index, len(freeSymbols))
 	e.Store(name)
 }
 
