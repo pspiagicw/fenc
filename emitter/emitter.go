@@ -152,7 +152,6 @@ func (e *Emitter) Load(name string) bool {
 func (e *Emitter) Function(name string, args []string, body CompileFunc) {
 	funcEmitter := e.NewSubEmitter()
 	funcEmitter.enterScope()
-	funcEmitter.symbols.Define(name)
 
 	for _, arg := range args {
 		funcEmitter.symbols.Define(arg)

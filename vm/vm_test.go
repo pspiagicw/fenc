@@ -406,6 +406,72 @@ func TestGlobalReuseAfterComputation(t *testing.T) {
 	expected := object.CreateInt(8)
 	testVM(t, e, expected)
 }
+
+func TestFunction(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.Function("test", []string{}, func(e *emitter.Emitter) {
+		e.PushInt(2)
+		e.ReturnValue()
+	})
+	e.Load("test")
+	e.Call(0)
+
+	expected := object.CreateInt(2)
+
+	testVM(t, e, expected)
+
+}
+
+func TestFunctionWithArgs(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.Function("test", []string{"x", "y"}, func(e *emitter.Emitter) {
+		e.Load("x")
+		e.Load("y")
+		e.AddInt()
+		e.ReturnValue()
+	})
+	e.PushInt(2)
+	e.PushInt(2)
+
+	e.Load("test")
+	e.Call(2)
+
+	expected := object.CreateInt(4)
+	testVM(t, e, expected)
+}
+
+func TestLambdaWithNoReturn(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.Lambda([]string{}, func(e *emitter.Emitter) {
+		e.PushInt(1)
+		e.PushInt(1)
+		e.Return()
+	})
+	e.Call(0)
+
+	expected := object.CreateInt(2)
+
+	testVMStackEmpty(t, e, expected)
+}
+func TestLambdaWithReturn(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(1)
+	e.PushInt(1)
+	e.Lambda([]string{"x", "y"}, func(e *emitter.Emitter) {
+		e.Load("x")
+		e.Load("y")
+		e.AddInt()
+		e.ReturnValue()
+	})
+	e.Call(2)
+	expected := object.CreateInt(2)
+
+	testVM(t, e, expected)
+}
+
+func TestFunctionWithReturn(t *testing.T) {
+}
+
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 	vm := NewVM(e)
 
@@ -413,4 +479,13 @@ func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 
 	o := vm.Peek()
 	assert.Equal(t, o, expected, "Result not equal!")
+}
+
+func testVMStackEmpty(t *testing.T, e *emitter.Emitter, expected object.Object) {
+	vm := NewVM(e)
+
+	vm.Run()
+
+	assert.Equal(t, vm.stackPointer, 0, "Stack not empty!")
+
 }

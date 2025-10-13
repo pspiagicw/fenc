@@ -13,8 +13,10 @@ const StackSize = 2048
 const MaxFrames = 256
 
 type Frame struct {
-	tape []code.Instruction
-	ip   int
+	tape       []code.Instruction
+	ip         int
+	locals     []object.Object
+	oldPointer int
 }
 
 type VM struct {
@@ -36,7 +38,7 @@ func NewFrame(tape []code.Instruction) *Frame {
 }
 
 func (vm *VM) currentFrame() *Frame {
-	return vm.frames[vm.framePointer]
+	return vm.frames[vm.framePointer-1]
 }
 
 func (vm *VM) popFrame() *Frame {
@@ -58,6 +60,7 @@ func NewVM(e *emitter.Emitter) *VM {
 		stackPointer: 0,
 		constants:    constants,
 		globals:      map[int]object.Object{},
+		framePointer: 1,
 	}
 }
 func (vm *VM) Run() {
@@ -116,11 +119,76 @@ func (vm *VM) Run() {
 			vm.Store(ins.Args[0])
 		case code.LOAD_GLOBAL:
 			vm.Load(ins.Args[0])
+		case code.CLOSURE:
+			vm.Closure(ins.Args[0], ins.Args[1])
+		case code.CALL:
+			vm.Call(ins.Args[0])
+		case code.RETURN:
+			vm.Return()
+		case code.RETURN_VALUE:
+			vm.ReturnValue()
+		case code.LOAD_LOCAL:
+			vm.LoadLocal(ins.Args[0])
 		default:
-			goreland.LogError("Invalid Op: %s", ins.OpCode)
+			goreland.LogFatal("Invalid Op: %s", ins.OpCode)
 		}
 		vm.currentFrame().ip += 1
 	}
+}
+func (vm *VM) LoadLocal(id int) {
+	o := vm.currentFrame().locals[id]
+	vm.Push(o)
+}
+func (vm *VM) ReturnValue() {
+	value := vm.Pop()
+	vm.Return()
+	vm.Push(value)
+}
+func (vm *VM) Return() {
+	f := vm.popFrame()
+	vm.stackPointer = f.oldPointer
+}
+func (vm *VM) Call(numArgs int) {
+	fn := vm.PopClosure()
+
+	args := make([]object.Object, numArgs)
+	for i := 0; i < numArgs; i++ {
+		args[i] = vm.stack[vm.stackPointer-numArgs+i]
+	}
+
+	newFrame := NewFrame(fn.Value.Value)
+	newFrame.locals = args
+	// The ip will be incremented automatically, thus we need to set it to -1, thus it will be incremented to 0.
+	newFrame.ip = -1
+	newFrame.oldPointer = vm.stackPointer
+
+	vm.pushFrame(newFrame)
+
+}
+func (vm *VM) Closure(constId int, numFree int) {
+	fn := vm.getConstant(constId)
+	v, ok := fn.(object.Function)
+	if !ok {
+		goreland.LogFatal("Unable to resolve function from constant pool.")
+	}
+
+	// Load the variables in reverse.
+	// Copy the variables
+	// And reset the stackPointer to treat as if those variables didn't exist.
+	free := make([]object.Object, numFree)
+	for i := 0; i < numFree; i++ {
+		free[i] = vm.stack[vm.stackPointer-numFree+i]
+	}
+
+	// Reset the stackPointer.
+	vm.stackPointer = vm.stackPointer - numFree
+
+	closure := object.Closure{
+		Value: v,
+		Free:  free,
+	}
+	vm.Push(closure)
+
 }
 func (vm *VM) Store(id int) {
 	o := vm.Pop()
@@ -169,6 +237,16 @@ func (vm *VM) DivInt() {
 	l := vm.PopInt()
 
 	vm.Push(object.CreateInt((int)(l.Value / r.Value)))
+}
+func (vm *VM) PopClosure() object.Closure {
+	o := vm.Pop()
+
+	v, ok := o.(object.Closure)
+	if !ok {
+		goreland.LogFatal("Can't cast object to closure.")
+	}
+
+	return v
 }
 func (vm *VM) GtFloat() {
 	r := vm.PopFloat()

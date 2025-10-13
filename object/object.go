@@ -135,7 +135,7 @@ type Closure struct {
 func (c Closure) Type() CType {
 	return CLOSURE
 }
-func (c Closure) Inspect() string {
+func (c Closure) String() string {
 	return "closure"
 }
 func (c Closure) Content() string {
