@@ -17,6 +17,7 @@ type Frame struct {
 	ip         int
 	locals     []object.Object
 	oldPointer int
+	free       []object.Object
 }
 
 type VM struct {
@@ -129,11 +130,17 @@ func (vm *VM) Run() {
 			vm.ReturnValue()
 		case code.LOAD_LOCAL:
 			vm.LoadLocal(ins.Args[0])
+		case code.LOAD_FREE:
+			vm.LoadFree(ins.Args[0])
 		default:
 			goreland.LogFatal("Invalid Op: %s", ins.OpCode)
 		}
 		vm.currentFrame().ip += 1
 	}
+}
+func (vm *VM) LoadFree(id int) {
+	val := vm.currentFrame().free[id]
+	vm.Push(val)
 }
 func (vm *VM) LoadLocal(id int) {
 	o := vm.currentFrame().locals[id]
@@ -145,15 +152,14 @@ func (vm *VM) ReturnValue() {
 	vm.Push(value)
 }
 func (vm *VM) Return() {
-	f := vm.popFrame()
-	vm.stackPointer = f.oldPointer
+	vm.popFrame()
 }
 func (vm *VM) Call(numArgs int) {
 	fn := vm.PopClosure()
 
 	args := make([]object.Object, numArgs)
-	for i := 0; i < numArgs; i++ {
-		args[i] = vm.stack[vm.stackPointer-numArgs+i]
+	for i := numArgs - 1; i >= 0; i-- {
+		args[i] = vm.Pop()
 	}
 
 	newFrame := NewFrame(fn.Value.Value)
@@ -161,6 +167,7 @@ func (vm *VM) Call(numArgs int) {
 	// The ip will be incremented automatically, thus we need to set it to -1, thus it will be incremented to 0.
 	newFrame.ip = -1
 	newFrame.oldPointer = vm.stackPointer
+	newFrame.free = fn.Free
 
 	vm.pushFrame(newFrame)
 

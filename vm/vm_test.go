@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
+	"github.com/pspiagicw/fenc/dump"
 	"github.com/pspiagicw/fenc/emitter"
 	"github.com/pspiagicw/fenc/object"
 )
@@ -472,6 +473,68 @@ func TestLambdaWithReturn(t *testing.T) {
 func TestFunctionWithReturn(t *testing.T) {
 }
 
+func TestClosure(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.Function("newClosure", []string{"a"}, func(e *emitter.Emitter) {
+		e.Lambda([]string{}, func(e *emitter.Emitter) {
+			e.Load("a")
+			e.ReturnValue()
+		})
+		e.ReturnValue()
+	})
+	e.PushInt(99)
+	e.Load("newClosure")
+	e.Call(1)
+	e.Store("closure")
+	e.Load("closure")
+	e.Call(0)
+
+	b, c := e.Bytecode()
+	dump.Dump(b)
+
+	dump.Constants(c)
+
+	expected := object.CreateInt(99)
+
+	testVM(t, e, expected)
+
+}
+func TestComplexClosure(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.Function("newAdder", []string{"a", "b"}, func(e *emitter.Emitter) {
+		e.Lambda([]string{"c"}, func(e *emitter.Emitter) {
+			e.Load("a")
+			e.Load("b")
+			e.Load("c")
+			e.AddInt()
+			e.AddInt()
+			e.ReturnValue()
+		})
+		e.ReturnValue()
+	})
+
+	e.PushInt(1)
+	e.PushInt(2)
+	e.Load("newAdder")
+	e.Call(2)
+	e.Store("adder")
+	e.PushInt(8)
+	e.Load("adder")
+	e.Call(1)
+
+	// b, c := e.Bytecode()
+	// dump.Dump(b)
+	//
+	// dump.Constants(c)
+
+	expected := object.CreateInt(11)
+
+	testVM(t, e, expected)
+}
+
+//	func TestComplexClosure2(t *testing.T) {
+//		e := emitter.NewEmitter()
+//	}
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 	vm := NewVM(e)
 
