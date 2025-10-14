@@ -564,6 +564,51 @@ func TestComplexClosure2(t *testing.T) {
 
 	testVM(t, e, expected)
 }
+
+func TestWeirdClosure(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.Function("newAdderOuter", []string{"a", "b"}, func(e *emitter.Emitter) {
+		e.Load("a")
+		e.Load("b")
+		e.AddInt()
+		e.Store("c")
+		e.Lambda([]string{"d"}, func(e *emitter.Emitter) {
+			e.Load("d")
+			e.Load("c")
+			e.AddInt()
+			e.Store("e")
+			e.Lambda([]string{"f"}, func(e *emitter.Emitter) {
+				e.Load("e")
+				e.Load("f")
+				e.AddInt()
+				e.ReturnValue()
+			})
+			e.ReturnValue()
+		})
+		e.ReturnValue()
+	})
+	e.PushInt(1)
+	e.PushInt(2)
+	e.Load("newAdderOuter")
+	e.Call(2)
+	e.Store("newAdderInner")
+	e.PushInt(3)
+	e.Load("newAdderInner")
+	e.Call(1)
+	e.Store("adder")
+	e.PushInt(8)
+	e.Load("adder")
+	e.Call(1)
+
+	// b, c := e.Bytecode()
+	// dump.Dump(b)
+	// dump.Constants(c)
+
+	expected := object.CreateInt(14)
+
+	testVM(t, e, expected)
+
+}
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 	vm := NewVM(e)
 
