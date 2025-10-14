@@ -8,6 +8,11 @@ import (
 
 type CompileFunc func(*Emitter)
 
+type ByteCode struct {
+	Tape      []code.Instruction
+	Constants []object.Object
+}
+
 type Emitter struct {
 	tape      []code.Instruction
 	tapeIndex int
@@ -37,8 +42,8 @@ func NewEmitter() *Emitter {
 		symbols:   NewSymbolTable(),
 	}
 }
-func (e *Emitter) Bytecode() ([]code.Instruction, []object.Object) {
-	return e.tape, e.constants.constants
+func (e *Emitter) Bytecode() ByteCode {
+	return ByteCode{e.tape, e.constants.constants}
 }
 
 func (e *Emitter) Emit(op code.Op, args ...int) int {
@@ -134,7 +139,7 @@ func (e *Emitter) Store(name string) {
 func (e *Emitter) Load(name string) bool {
 	s, ok := e.symbols.Resolve(name)
 	if !ok {
-		return ok
+		goreland.LogFatal("Can't find symbol: %s", name)
 	}
 
 	switch s.Scope {

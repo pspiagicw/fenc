@@ -42,6 +42,7 @@ func Convert(tape []code.Instruction, constants []object.Object) []byte {
 			goreland.LogFatal("Unknown number of operands!")
 		}
 	}
+
 	return buffer
 }
 func convertOp(buffer []byte, ins code.Instruction) []byte {

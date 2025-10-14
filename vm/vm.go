@@ -53,14 +53,14 @@ func (vm *VM) pushFrame(f *Frame) {
 }
 
 func NewVM(e *emitter.Emitter) *VM {
-	instructions, constants := e.Bytecode()
+	bytecode := e.Bytecode()
 	frames := make([]*Frame, MaxFrames)
-	frames[0] = NewFrame(instructions)
+	frames[0] = NewFrame(bytecode.Tape)
 	return &VM{
 		frames:       frames,
 		stack:        make([]object.Object, StackSize),
 		stackPointer: 0,
-		constants:    constants,
+		constants:    bytecode.Constants,
 		globals:      map[int]object.Object{},
 		framePointer: 1,
 	}

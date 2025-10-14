@@ -489,11 +489,6 @@ func TestClosure(t *testing.T) {
 	e.Load("closure")
 	e.Call(0)
 
-	b, c := e.Bytecode()
-	dump.Dump(b)
-
-	dump.Constants(c)
-
 	expected := object.CreateInt(99)
 
 	testVM(t, e, expected)
@@ -556,10 +551,6 @@ func TestComplexClosure2(t *testing.T) {
 	e.Load("adder")
 	e.Call(1)
 
-	b, c := e.Bytecode()
-	dump.Dump(b)
-	dump.Constants(c)
-
 	expected := object.CreateInt(11)
 
 	testVM(t, e, expected)
@@ -608,6 +599,49 @@ func TestWeirdClosure(t *testing.T) {
 
 	testVM(t, e, expected)
 
+}
+func TestRecursion(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.Function("fibonacci", []string{"x"}, func(e *emitter.Emitter) {
+		e.If(func(e *emitter.Emitter) {
+			e.Load("x")
+			e.PushInt(2)
+			e.LtInt()
+		}, func(e *emitter.Emitter) {
+			e.Load("x")
+			e.ReturnValue()
+		}, func(e *emitter.Emitter) {
+			e.Load("x")
+			e.PushInt(1)
+			e.SubInt()
+
+			e.Load("fibonacci")
+			e.Call(1)
+
+			e.Load("x")
+			e.PushInt(2)
+			e.SubInt()
+
+			e.Load("fibonacci")
+			e.Call(1)
+
+			e.AddInt()
+
+			e.ReturnValue()
+		})
+	})
+	e.PushInt(10)
+	e.Load("fibonacci")
+	e.Call(1)
+
+	expected := object.CreateInt(13)
+
+	bytecode := e.Bytecode()
+
+	dump.Dump(bytecode.Tape)
+	dump.Constants(bytecode.Constants)
+
+	testVM(t, e, expected)
 }
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 	vm := NewVM(e)
