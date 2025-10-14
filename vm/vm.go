@@ -11,6 +11,7 @@ import (
 
 const StackSize = 2048
 const MaxFrames = 256
+const MaxLocals = 2048
 
 type Frame struct {
 	tape       []code.Instruction
@@ -132,11 +133,17 @@ func (vm *VM) Run() {
 			vm.LoadLocal(ins.Args[0])
 		case code.LOAD_FREE:
 			vm.LoadFree(ins.Args[0])
+		case code.STORE_LOCAL:
+			vm.StoreLocal(ins.Args[0])
 		default:
 			goreland.LogFatal("Invalid Op: %s", ins.OpCode)
 		}
 		vm.currentFrame().ip += 1
 	}
+}
+func (vm *VM) StoreLocal(id int) {
+	o := vm.Pop()
+	vm.currentFrame().locals[id] = o
 }
 func (vm *VM) LoadFree(id int) {
 	val := vm.currentFrame().free[id]
@@ -152,12 +159,13 @@ func (vm *VM) ReturnValue() {
 	vm.Push(value)
 }
 func (vm *VM) Return() {
-	vm.popFrame()
+	f := vm.popFrame()
+	vm.stackPointer = f.oldPointer
 }
 func (vm *VM) Call(numArgs int) {
 	fn := vm.PopClosure()
 
-	args := make([]object.Object, numArgs)
+	args := make([]object.Object, MaxLocals)
 	for i := numArgs - 1; i >= 0; i-- {
 		args[i] = vm.Pop()
 	}

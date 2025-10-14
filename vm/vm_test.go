@@ -532,9 +532,38 @@ func TestComplexClosure(t *testing.T) {
 	testVM(t, e, expected)
 }
 
-//	func TestComplexClosure2(t *testing.T) {
-//		e := emitter.NewEmitter()
-//	}
+func TestComplexClosure2(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.Function("newAdder", []string{"a", "b"}, func(e *emitter.Emitter) {
+		e.Load("a")
+		e.Load("b")
+		e.AddInt()
+		e.Store("c")
+		e.Lambda([]string{"d"}, func(e *emitter.Emitter) {
+			e.Load("d")
+			e.Load("c")
+			e.AddInt()
+			e.ReturnValue()
+		})
+		e.ReturnValue()
+	})
+	e.PushInt(1)
+	e.PushInt(2)
+	e.Load("newAdder")
+	e.Call(2)
+	e.Store("adder")
+	e.PushInt(8)
+	e.Load("adder")
+	e.Call(1)
+
+	b, c := e.Bytecode()
+	dump.Dump(b)
+	dump.Constants(c)
+
+	expected := object.CreateInt(11)
+
+	testVM(t, e, expected)
+}
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 	vm := NewVM(e)
 
