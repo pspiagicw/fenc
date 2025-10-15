@@ -8,6 +8,17 @@ import (
 	"github.com/pspiagicw/goreland"
 )
 
+type ConstKind int
+
+const (
+	None ConstKind = iota
+	Int
+	Float
+	String
+	Bool
+	Function
+)
+
 var operandMap = map[code.Op]int{
 	code.PUSH:         1,
 	code.JUMP:         1,
@@ -42,6 +53,21 @@ func Convert(tape []code.Instruction, constants []object.Object) []byte {
 			goreland.LogFatal("Unknown number of operands!")
 		}
 	}
+
+	// buffer := []byte{}
+	// functions := []object.Object{}
+	//
+	// for _, constant := range constants {
+	// 	switch constant := constant.(type) {
+	// 	case object.Int:
+	// 		buffer = convertInt(buffer, constant)
+	// 	}
+	// }
+
+	return buffer
+}
+func convertInt(buffer []byte, c object.Int) []byte {
+	buffer = binary.BigEndian.AppendUint32(buffer, uint32(c.Value))
 
 	return buffer
 }

@@ -16,6 +16,7 @@ const (
 	STRING   CType = "string"
 	FUNCTION CType = "function"
 	CLOSURE  CType = "CLOSURE"
+	ARRAY    CType = "ARRAY"
 )
 
 type Object interface {
@@ -140,4 +141,19 @@ func (c Closure) String() string {
 }
 func (c Closure) Content() string {
 	return "closure"
+}
+
+type Array struct {
+	Values    []Object
+	ArrayType CType
+}
+
+func (a Array) Type() CType {
+	return ARRAY
+}
+func (a Array) String() string {
+	return "array"
+}
+func (a Array) Content() string {
+	return "array"
 }

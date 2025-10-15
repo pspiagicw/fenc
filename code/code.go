@@ -50,6 +50,10 @@ const (
 	LOAD_FREE
 
 	CLOSURE
+
+	ARRAY
+	HASH
+	INDEX
 )
 
 type Instruction struct {

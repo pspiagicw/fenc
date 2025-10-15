@@ -204,6 +204,15 @@ func (e *Emitter) Lambda(args []string, body CompileFunc) {
 	index := e.Constant(fn)
 	e.Emit(code.CLOSURE, index, len(freeSymbols))
 }
+func (e *Emitter) Array(count int) {
+	e.Emit(code.ARRAY, count)
+}
+func (e *Emitter) Hash(count int) {
+	e.Emit(code.HASH, count)
+}
+func (e *Emitter) Index() {
+	e.Emit(code.INDEX)
+}
 func (e *Emitter) ReturnValue() {
 	e.Emit(code.RETURN_VALUE)
 }

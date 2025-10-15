@@ -922,6 +922,83 @@ func TestClosureComplex(t *testing.T) {
 
 	testEmitter(t, e, expected, constants)
 }
+func TestArrays(t *testing.T) {
+	e := getEmitter()
+	e.PushInt(2)
+	e.PushInt(3)
+	e.Array(2)
+
+	expected := []code.Instruction{
+		createInstruction(code.PUSH, 0),
+		createInstruction(code.PUSH, 1),
+		createInstruction(code.ARRAY, 2),
+	}
+
+	constants := []object.Object{
+		object.CreateInt(2),
+		object.CreateInt(3),
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestHashes(t *testing.T) {
+	e := getEmitter()
+	e.PushString("pspiagicw")
+	e.PushInt(20)
+	e.PushString("torvalds")
+	e.PushInt(100)
+	e.PushString("stallman")
+	e.PushInt(80)
+	e.Hash(6)
+
+	expected := []code.Instruction{
+		createInstruction(code.PUSH, 0),
+		createInstruction(code.PUSH, 1),
+		createInstruction(code.PUSH, 2),
+		createInstruction(code.PUSH, 3),
+		createInstruction(code.PUSH, 4),
+		createInstruction(code.PUSH, 5),
+		createInstruction(code.HASH, 6),
+	}
+
+	constants := []object.Object{
+		object.CreateString("pspiagicw"),
+		object.CreateInt(20),
+		object.CreateString("torvalds"),
+		object.CreateInt(100),
+		object.CreateString("stallman"),
+		object.CreateInt(80),
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
+func TestIndex(t *testing.T) {
+	e := getEmitter()
+	e.PushInt(2)
+	e.PushInt(3)
+	e.Array(2)
+	e.PushInt(2)
+	e.Index()
+
+	expected := []code.Instruction{
+		createInstruction(code.PUSH, 0),
+		createInstruction(code.PUSH, 1),
+		createInstruction(code.ARRAY, 2),
+		createInstruction(code.PUSH, 2),
+		createInstruction(code.INDEX),
+	}
+
+	constants := []object.Object{
+		object.CreateInt(2),
+		object.CreateInt(3),
+		object.CreateInt(2),
+	}
+
+	testEmitter(t, e, expected, constants)
+
+}
 
 func createArgs(args ...int) []int {
 	return args
