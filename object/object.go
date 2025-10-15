@@ -18,6 +18,8 @@ const (
 	CLOSURE  CType = "CLOSURE"
 	ARRAY    CType = "ARRAY"
 	HASH     CType = "HASH"
+	CLASS    CType = "CLASS"
+	INSTANCE CType = "INSTANCE"
 )
 
 type Object interface {
@@ -181,4 +183,33 @@ func (h Hash) String() string {
 }
 func (h Hash) Content() string {
 	return "hash"
+}
+
+type Class struct {
+	Name string
+}
+
+func (c Class) Type() CType {
+	return CLASS
+}
+func (c Class) String() string {
+	return "class"
+}
+func (c Class) Content() string {
+	return "class"
+}
+
+type Instance struct {
+	Klass  Class
+	Fields map[string]Object
+}
+
+func (i Instance) Type() CType {
+	return INSTANCE
+}
+func (i Instance) String() string {
+	return "instance"
+}
+func (i Instance) Content() string {
+	return "instance"
 }
