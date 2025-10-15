@@ -54,6 +54,7 @@ const (
 	ARRAY
 	HASH
 	INDEX
+	ACCESS
 )
 
 type Instruction struct {

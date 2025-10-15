@@ -22,8 +22,6 @@ type Frame struct {
 }
 
 type VM struct {
-	// ip           int
-	// tape         []code.Instruction
 	frames       []*Frame
 	framePointer int
 	stack        []object.Object
@@ -135,11 +133,58 @@ func (vm *VM) Run() {
 			vm.LoadFree(ins.Args[0])
 		case code.STORE_LOCAL:
 			vm.StoreLocal(ins.Args[0])
+		case code.ARRAY:
+			vm.Array(ins.Args[0])
+		case code.INDEX:
+			vm.Index()
+		case code.HASH:
+			vm.Hash(ins.Args[0])
+		case code.ACCESS:
+			vm.Access()
 		default:
 			goreland.LogFatal("Invalid Op: %s", ins.OpCode)
 		}
 		vm.currentFrame().ip += 1
 	}
+}
+func (vm *VM) Hash(count int) {
+	hash := object.Hash{
+		Values: map[object.Object]object.Object{},
+	}
+	for i := 0; i < count; i++ {
+		value := vm.Pop()
+		key := vm.Pop()
+		hash.Values[key] = value
+	}
+
+	vm.Push(hash)
+}
+func (vm *VM) Access() {
+	key := vm.Pop()
+	hash := vm.PopHash()
+
+	val := hash.Values[key]
+
+	vm.Push(val)
+}
+func (vm *VM) Index() {
+	index := vm.PopInt()
+	arr := vm.PopArray()
+
+	val := arr.Values[index.Value]
+
+	vm.Push(val)
+}
+func (vm *VM) Array(count int) {
+	arr := object.Array{
+		Values: make([]object.Object, count),
+	}
+
+	for i := count - 1; i >= 0; i-- {
+		arr.Values[i] = vm.Pop()
+	}
+
+	vm.Push(arr)
 }
 func (vm *VM) StoreLocal(id int) {
 	o := vm.Pop()
@@ -382,6 +427,24 @@ func (vm *VM) PopInt() object.Int {
 	v, ok := o.(object.Int)
 	if !ok {
 		goreland.LogFatal("Expected object to be Integer, got %v", o)
+	}
+
+	return v
+}
+func (vm *VM) PopArray() object.Array {
+	o := vm.Pop()
+	v, ok := o.(object.Array)
+	if !ok {
+		goreland.LogFatal("Expected object to be Array, got %v", o)
+	}
+	return v
+}
+
+func (vm *VM) PopHash() object.Hash {
+	o := vm.Pop()
+	v, ok := o.(object.Hash)
+	if !ok {
+		goreland.LogFatal("Expected object to be Hash, got %v", o)
 	}
 
 	return v

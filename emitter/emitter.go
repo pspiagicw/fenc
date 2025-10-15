@@ -213,6 +213,9 @@ func (e *Emitter) Hash(count int) {
 func (e *Emitter) Index() {
 	e.Emit(code.INDEX)
 }
+func (e *Emitter) Access() {
+	e.Emit(code.ACCESS)
+}
 func (e *Emitter) ReturnValue() {
 	e.Emit(code.RETURN_VALUE)
 }

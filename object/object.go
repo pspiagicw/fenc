@@ -17,6 +17,7 @@ const (
 	FUNCTION CType = "function"
 	CLOSURE  CType = "CLOSURE"
 	ARRAY    CType = "ARRAY"
+	HASH     CType = "HASH"
 )
 
 type Object interface {
@@ -52,6 +53,17 @@ func CreateString(value string) Object {
 func CreateFunction(value []code.Instruction) Object {
 	return Function{
 		Value: value,
+	}
+}
+func CreateArray(values []Object) Object {
+	return Array{
+		Values: values,
+	}
+}
+
+func CreateHash(values map[Object]Object) Object {
+	return Hash{
+		Values: values,
 	}
 }
 
@@ -144,8 +156,7 @@ func (c Closure) Content() string {
 }
 
 type Array struct {
-	Values    []Object
-	ArrayType CType
+	Values []Object
 }
 
 func (a Array) Type() CType {
@@ -156,4 +167,18 @@ func (a Array) String() string {
 }
 func (a Array) Content() string {
 	return "array"
+}
+
+type Hash struct {
+	Values map[Object]Object
+}
+
+func (h Hash) Type() CType {
+	return HASH
+}
+func (h Hash) String() string {
+	return "hash"
+}
+func (h Hash) Content() string {
+	return "hash"
 }
