@@ -6,7 +6,6 @@ require (
 	github.com/alecthomas/assert/v2 v2.11.0
 	github.com/charmbracelet/lipgloss v0.9.1
 	github.com/pspiagicw/goreland v0.1.1
-	github.com/vmihailenco/msgpack/v5 v5.4.1
 )
 
 require (
@@ -19,6 +18,5 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
-	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 )
