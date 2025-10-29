@@ -1,6 +1,8 @@
 package convert
 
 import (
+	"bytes"
+	"io"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
@@ -100,4 +102,25 @@ func TestFunction(t *testing.T) {
 	expected := []byte{}
 
 	assert.Equal(t, bytecode, expected, "Converted bytecode not matching.")
+}
+
+func TestEncoding(t *testing.T) {
+	instructions := []code.Instruction{
+		{OpCode: code.PUSH, Args: []int{0}},
+	}
+	constants := []object.Object{}
+	bytecode := Convert(instructions, constants)
+
+	reader := bytes.NewReader(bytecode)
+	buffer := make([]byte, 5)
+	_, err := io.ReadFull(reader, buffer)
+	assert.NoError(t, err, "Error while reading buffer")
+
+	assert.Equal(t, buffer, []byte("FENCY"), "Magic bytes not matching.")
+
+	buffer = make([]byte, 1)
+	_, err = io.ReadFull(reader, buffer)
+	assert.NoError(t, err, "Error while reading buffer")
+
+	assert.Equal(t, buffer, []byte{1}, "Version number not matching")
 }

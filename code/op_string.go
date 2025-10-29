@@ -52,9 +52,9 @@ const _Op_name = "PUSHADD_INTSUB_INTMUL_INTDIV_INTLT_INTLTE_INTGT_INTGTE_INTADD_
 var _Op_index = [...]uint16{0, 4, 11, 18, 25, 32, 38, 45, 51, 58, 67, 76, 85, 94, 102, 109, 111, 114, 122, 131, 139, 148, 158, 162, 172, 178, 190, 194, 206, 217, 228, 238, 247, 254, 259, 263, 268, 274}
 
 func (i Op) String() string {
-	i -= 1
-	if i < 0 || i >= Op(len(_Op_index)-1) {
-		return "Op(" + strconv.FormatInt(int64(i+1), 10) + ")"
+	idx := int(i) - 1
+	if i < 1 || idx >= len(_Op_index)-1 {
+		return "Op(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _Op_name[_Op_index[i]:_Op_index[i+1]]
+	return _Op_name[_Op_index[idx]:_Op_index[idx+1]]
 }
