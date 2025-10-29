@@ -1000,6 +1000,23 @@ func TestIndex(t *testing.T) {
 
 }
 
+func TestToFloat(t *testing.T) {
+	e := getEmitter()
+	e.PushInt(3)
+	e.ToFloat()
+
+	expected := []code.Instruction{
+		createInstruction(code.PUSH, 0),
+		createInstruction(code.TO_FLOAT),
+	}
+
+	constants := []object.Object{
+		object.CreateInt(3),
+	}
+
+	testEmitter(t, e, expected, constants)
+}
+
 func createArgs(args ...int) []int {
 	return args
 }

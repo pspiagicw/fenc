@@ -833,6 +833,16 @@ func TestNestedHash(t *testing.T) {
 	})
 	testVM(t, e, expected)
 }
+
+func TestToFloat(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushInt(3)
+	e.ToFloat()
+
+	expected := object.CreateFloat(3)
+
+	testVM(t, e, expected)
+}
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 	vm := NewVM(e)
 

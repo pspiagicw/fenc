@@ -141,11 +141,20 @@ func (vm *VM) Run() {
 			vm.Hash(ins.Args[0])
 		case code.ACCESS:
 			vm.Access()
+		case code.TO_FLOAT:
+			vm.ToFloat()
 		default:
 			goreland.LogFatal("Invalid Op: %s", ins.OpCode)
 		}
 		vm.currentFrame().ip += 1
 	}
+}
+func (vm *VM) ToFloat() {
+	value := vm.PopInt()
+
+	newValue := object.CreateFloat(float32(value.Value))
+
+	vm.Push(newValue)
 }
 func (vm *VM) Hash(count int) {
 	hash := object.Hash{

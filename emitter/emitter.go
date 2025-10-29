@@ -293,3 +293,7 @@ func (e *Emitter) OrBool() {
 func (e *Emitter) AddString() {
 	e.Emit(code.ADD_STRING)
 }
+
+func (e *Emitter) ToFloat() {
+	e.Emit(code.TO_FLOAT)
+}

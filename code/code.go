@@ -55,6 +55,8 @@ const (
 	HASH
 	INDEX
 	ACCESS
+
+	TO_FLOAT
 )
 
 type Instruction struct {
