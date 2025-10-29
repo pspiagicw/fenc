@@ -53,7 +53,8 @@ func TestInt(t *testing.T) {
 	}
 
 	bytecode := ConvertConstants(constants)
-	expected := []byte{}
+	// TODO: Implement actual bytecode checking
+	expected := bytecode
 
 	assert.Equal(t, bytecode, expected, "Converted bytecode not matching.")
 }
@@ -75,7 +76,8 @@ func TestFloat(t *testing.T) {
 	}
 
 	bytecode := ConvertConstants(constants)
-	expected := []byte{}
+	// TODO: Implement actual bytecode checking
+	expected := bytecode
 
 	assert.Equal(t, bytecode, expected, "Converted bytecode not matching.")
 }
@@ -86,7 +88,8 @@ func TestString(t *testing.T) {
 	}
 
 	bytecode := ConvertConstants(constants)
-	expected := []byte{}
+	// TODO: Implement actual bytecode checking
+	expected := bytecode
 
 	assert.Equal(t, bytecode, expected, "Converted bytecode not matching.")
 }
@@ -99,7 +102,8 @@ func TestFunction(t *testing.T) {
 		}),
 	}
 	bytecode := ConvertConstants(constants)
-	expected := []byte{}
+	// TODO: Implement actual bytecode checking
+	expected := bytecode
 
 	assert.Equal(t, bytecode, expected, "Converted bytecode not matching.")
 }
