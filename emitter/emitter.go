@@ -165,7 +165,7 @@ func (e *Emitter) Load(name string) bool {
 	return ok
 }
 
-func (e *Emitter) Function(name string, args []string, body CompileFunc) {
+func (e *Emitter) Function(name string, args []string, body CompileFunc) error {
 	funcEmitter := e.NewSubEmitter()
 	funcEmitter.enterScope()
 
@@ -173,7 +173,10 @@ func (e *Emitter) Function(name string, args []string, body CompileFunc) {
 		funcEmitter.symbols.Define(arg)
 	}
 
-	body(funcEmitter)
+	err := body(funcEmitter)
+	if err != nil {
+		return err
+	}
 
 	freeSymbols := funcEmitter.symbols.Free
 	funcEmitter.leaveScope()
@@ -189,9 +192,11 @@ func (e *Emitter) Function(name string, args []string, body CompileFunc) {
 	index := e.Constant(fn)
 	e.Emit(code.CLOSURE, index, len(freeSymbols))
 	e.Store(name)
+
+	return nil
 }
 
-func (e *Emitter) Lambda(args []string, body CompileFunc) {
+func (e *Emitter) Lambda(args []string, body CompileFunc) error {
 	funcEmitter := e.NewSubEmitter()
 	funcEmitter.enterScope()
 
@@ -199,7 +204,10 @@ func (e *Emitter) Lambda(args []string, body CompileFunc) {
 		funcEmitter.symbols.Define(arg)
 	}
 
-	body(funcEmitter)
+	err := body(funcEmitter)
+	if err != nil {
+		return err
+	}
 
 	freeSymbols := funcEmitter.symbols.Free
 	funcEmitter.leaveScope()
@@ -214,6 +222,8 @@ func (e *Emitter) Lambda(args []string, body CompileFunc) {
 	// e.PushFunction(fn)
 	index := e.Constant(fn)
 	e.Emit(code.CLOSURE, index, len(freeSymbols))
+
+	return nil
 }
 func (e *Emitter) Array(count int) {
 	e.Emit(code.ARRAY, count)
