@@ -576,16 +576,19 @@ func TestNEqString(t *testing.T) {
 func TestIfStatement(t *testing.T) {
 	e := getEmitter()
 	e.If(
-		func(e *Emitter) {
+		func(e *Emitter) error {
 			e.PushInt(1)
 			e.PushInt(2)
 			e.LtInt()
+			return nil
 		},
-		func(e *Emitter) {
+		func(e *Emitter) error {
 			e.PushInt(10)
+			return nil
 		},
-		func(e *Emitter) {
+		func(e *Emitter) error {
 			e.PushInt(20)
+			return nil
 		},
 	)
 
@@ -683,8 +686,9 @@ func TestGlobals(t *testing.T) {
 
 func TestFunctionSimple(t *testing.T) {
 	e := getEmitter()
-	e.Function("test", []string{}, func(e *Emitter) {
+	e.Function("test", []string{}, func(e *Emitter) error {
 		e.PushInt(2)
+		return nil
 	})
 	e.Load("test")
 	e.Call(0)
@@ -708,13 +712,14 @@ func TestFunctionSimple(t *testing.T) {
 }
 func TestFunctionWithArg(t *testing.T) {
 	e := getEmitter()
-	e.Function("add", []string{"x", "y"}, func(e *Emitter) {
+	e.Function("add", []string{"x", "y"}, func(e *Emitter) error {
 		e.Load("x")
 		e.Load("y")
 		e.AddInt()
 		e.Store("z")
 		e.Load("z")
 		e.ReturnValue()
+		return nil
 	})
 
 	constants := []object.Object{
@@ -737,8 +742,9 @@ func TestFunctionWithArg(t *testing.T) {
 }
 func TestLambda(t *testing.T) {
 	e := getEmitter()
-	e.Lambda([]string{}, func(e *Emitter) {
+	e.Lambda([]string{}, func(e *Emitter) error {
 		e.PushInt(1)
+		return nil
 	})
 
 	constants := []object.Object{
@@ -776,14 +782,16 @@ func TestLambda(t *testing.T) {
 
 func TestClosure(t *testing.T) {
 	e := getEmitter()
-	e.Lambda([]string{"a"}, func(e *Emitter) {
-		e.Lambda([]string{"b"}, func(e *Emitter) {
+	e.Lambda([]string{"a"}, func(e *Emitter) error {
+		e.Lambda([]string{"b"}, func(e *Emitter) error {
 			e.Load("a")
 			e.Load("b")
 			e.AddInt()
 			e.ReturnValue()
+			return nil
 		})
 		e.Return()
+		return nil
 	})
 
 	constants := []object.Object{
@@ -809,19 +817,22 @@ func TestClosure(t *testing.T) {
 
 func TestNestedClosure(t *testing.T) {
 	e := getEmitter()
-	e.Lambda([]string{"a"}, func(e *Emitter) {
-		e.Lambda([]string{"b"}, func(e *Emitter) {
-			e.Lambda([]string{"c"}, func(e *Emitter) {
+	e.Lambda([]string{"a"}, func(e *Emitter) error {
+		e.Lambda([]string{"b"}, func(e *Emitter) error {
+			e.Lambda([]string{"c"}, func(e *Emitter) error {
 				e.Load("a")
 				e.Load("b")
 				e.AddInt()
 				e.Load("c")
 				e.AddInt()
 				e.ReturnValue()
+				return nil
 			})
 			e.ReturnValue()
+			return nil
 		})
 		e.ReturnValue()
+		return nil
 	})
 
 	constants := []object.Object{
@@ -857,13 +868,13 @@ func TestClosureComplex(t *testing.T) {
 	e := getEmitter()
 	e.PushInt(55)
 	e.Store("global")
-	e.Lambda([]string{}, func(e *Emitter) {
+	e.Lambda([]string{}, func(e *Emitter) error {
 		e.PushInt(66)
 		e.Store("a")
-		e.Lambda([]string{}, func(e *Emitter) {
+		e.Lambda([]string{}, func(e *Emitter) error {
 			e.PushInt(77)
 			e.Store("b")
-			e.Lambda([]string{}, func(e *Emitter) {
+			e.Lambda([]string{}, func(e *Emitter) error {
 				e.PushInt(88)
 				e.Store("c")
 				e.Load("global")
@@ -874,10 +885,13 @@ func TestClosureComplex(t *testing.T) {
 				e.Load("c")
 				e.AddInt()
 				e.ReturnValue()
+				return nil
 			})
 			e.ReturnValue()
+			return nil
 		})
 		e.ReturnValue()
+		return nil
 	})
 
 	constants := []object.Object{

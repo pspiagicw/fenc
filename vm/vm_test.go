@@ -272,14 +272,17 @@ func TestIf(t *testing.T) {
 	e := emitter.NewEmitter()
 
 	e.If(
-		func(e *emitter.Emitter) {
+		func(e *emitter.Emitter) error {
 			e.PushBool(true)
+			return nil
 		},
-		func(e *emitter.Emitter) {
+		func(e *emitter.Emitter) error {
 			e.PushInt(10)
+			return nil
 		},
-		func(e *emitter.Emitter) {
+		func(e *emitter.Emitter) error {
 			e.PushInt(99)
+			return nil
 		},
 	)
 
@@ -290,14 +293,17 @@ func TestIf_FalseBranch(t *testing.T) {
 	e := emitter.NewEmitter()
 
 	e.If(
-		func(e *emitter.Emitter) { // condition
+		func(e *emitter.Emitter) error { // condition
 			e.PushBool(false)
+			return nil
 		},
-		func(e *emitter.Emitter) { // then
+		func(e *emitter.Emitter) error { // then
 			e.PushInt(10)
+			return nil
 		},
-		func(e *emitter.Emitter) { // else
+		func(e *emitter.Emitter) error { // else
 			e.PushInt(99)
+			return nil
 		},
 	)
 
@@ -307,11 +313,13 @@ func TestIf_True_NoElse(t *testing.T) {
 	e := emitter.NewEmitter()
 
 	e.If(
-		func(e *emitter.Emitter) { // condition
+		func(e *emitter.Emitter) error { // condition
 			e.PushBool(true)
+			return nil
 		},
-		func(e *emitter.Emitter) { // then
+		func(e *emitter.Emitter) error { // then
 			e.PushInt(42)
+			return nil
 		},
 		nil, // no else
 	)
@@ -323,24 +331,29 @@ func TestIf_Nested(t *testing.T) {
 	e := emitter.NewEmitter()
 
 	e.If(
-		func(e *emitter.Emitter) { // outer condition
+		func(e *emitter.Emitter) error { // outer condition
 			e.PushBool(true)
+			return nil
 		},
-		func(e *emitter.Emitter) { // outer then
-			e.If(
-				func(e *emitter.Emitter) { // inner condition
+		func(e *emitter.Emitter) error { // outer then
+			return e.If(
+				func(e *emitter.Emitter) error { // inner condition
 					e.PushBool(false)
+					return nil
 				},
-				func(e *emitter.Emitter) { // inner then
+				func(e *emitter.Emitter) error { // inner then
 					e.PushInt(111)
+					return nil
 				},
-				func(e *emitter.Emitter) { // inner else
+				func(e *emitter.Emitter) error { // inner else
 					e.PushInt(222)
+					return nil
 				},
 			)
 		},
-		func(e *emitter.Emitter) { // outer else
+		func(e *emitter.Emitter) error { // outer else
 			e.PushInt(333)
+			return nil
 		},
 	)
 
@@ -410,9 +423,10 @@ func TestGlobalReuseAfterComputation(t *testing.T) {
 
 func TestFunction(t *testing.T) {
 	e := emitter.NewEmitter()
-	e.Function("test", []string{}, func(e *emitter.Emitter) {
+	e.Function("test", []string{}, func(e *emitter.Emitter) error {
 		e.PushInt(2)
 		e.ReturnValue()
+		return nil
 	})
 	e.Load("test")
 	e.Call(0)
@@ -425,11 +439,12 @@ func TestFunction(t *testing.T) {
 
 func TestFunctionWithArgs(t *testing.T) {
 	e := emitter.NewEmitter()
-	e.Function("test", []string{"x", "y"}, func(e *emitter.Emitter) {
+	e.Function("test", []string{"x", "y"}, func(e *emitter.Emitter) error {
 		e.Load("x")
 		e.Load("y")
 		e.AddInt()
 		e.ReturnValue()
+		return nil
 	})
 	e.PushInt(2)
 	e.PushInt(2)
@@ -443,10 +458,11 @@ func TestFunctionWithArgs(t *testing.T) {
 
 func TestLambdaWithNoReturn(t *testing.T) {
 	e := emitter.NewEmitter()
-	e.Lambda([]string{}, func(e *emitter.Emitter) {
+	e.Lambda([]string{}, func(e *emitter.Emitter) error {
 		e.PushInt(1)
 		e.PushInt(1)
 		e.Return()
+		return nil
 	})
 	e.Call(0)
 
@@ -458,11 +474,12 @@ func TestLambdaWithReturn(t *testing.T) {
 	e := emitter.NewEmitter()
 	e.PushInt(1)
 	e.PushInt(1)
-	e.Lambda([]string{"x", "y"}, func(e *emitter.Emitter) {
+	e.Lambda([]string{"x", "y"}, func(e *emitter.Emitter) error {
 		e.Load("x")
 		e.Load("y")
 		e.AddInt()
 		e.ReturnValue()
+		return nil
 	})
 	e.Call(2)
 	expected := object.CreateInt(2)
@@ -475,12 +492,14 @@ func TestFunctionWithReturn(t *testing.T) {
 
 func TestClosure(t *testing.T) {
 	e := emitter.NewEmitter()
-	e.Function("newClosure", []string{"a"}, func(e *emitter.Emitter) {
-		e.Lambda([]string{}, func(e *emitter.Emitter) {
+	e.Function("newClosure", []string{"a"}, func(e *emitter.Emitter) error {
+		e.Lambda([]string{}, func(e *emitter.Emitter) error {
 			e.Load("a")
 			e.ReturnValue()
+			return nil
 		})
 		e.ReturnValue()
+		return nil
 	})
 	e.PushInt(99)
 	e.Load("newClosure")
@@ -496,16 +515,18 @@ func TestClosure(t *testing.T) {
 }
 func TestComplexClosure(t *testing.T) {
 	e := emitter.NewEmitter()
-	e.Function("newAdder", []string{"a", "b"}, func(e *emitter.Emitter) {
-		e.Lambda([]string{"c"}, func(e *emitter.Emitter) {
+	e.Function("newAdder", []string{"a", "b"}, func(e *emitter.Emitter) error {
+		e.Lambda([]string{"c"}, func(e *emitter.Emitter) error {
 			e.Load("a")
 			e.Load("b")
 			e.Load("c")
 			e.AddInt()
 			e.AddInt()
 			e.ReturnValue()
+			return nil
 		})
 		e.ReturnValue()
+		return nil
 	})
 
 	e.PushInt(1)
@@ -529,18 +550,20 @@ func TestComplexClosure(t *testing.T) {
 
 func TestComplexClosure2(t *testing.T) {
 	e := emitter.NewEmitter()
-	e.Function("newAdder", []string{"a", "b"}, func(e *emitter.Emitter) {
+	e.Function("newAdder", []string{"a", "b"}, func(e *emitter.Emitter) error {
 		e.Load("a")
 		e.Load("b")
 		e.AddInt()
 		e.Store("c")
-		e.Lambda([]string{"d"}, func(e *emitter.Emitter) {
+		e.Lambda([]string{"d"}, func(e *emitter.Emitter) error {
 			e.Load("d")
 			e.Load("c")
 			e.AddInt()
 			e.ReturnValue()
+			return nil
 		})
 		e.ReturnValue()
+		return nil
 	})
 	e.PushInt(1)
 	e.PushInt(2)
@@ -558,25 +581,28 @@ func TestComplexClosure2(t *testing.T) {
 
 func TestWeirdClosure(t *testing.T) {
 	e := emitter.NewEmitter()
-	e.Function("newAdderOuter", []string{"a", "b"}, func(e *emitter.Emitter) {
+	e.Function("newAdderOuter", []string{"a", "b"}, func(e *emitter.Emitter) error {
 		e.Load("a")
 		e.Load("b")
 		e.AddInt()
 		e.Store("c")
-		e.Lambda([]string{"d"}, func(e *emitter.Emitter) {
+		e.Lambda([]string{"d"}, func(e *emitter.Emitter) error {
 			e.Load("d")
 			e.Load("c")
 			e.AddInt()
 			e.Store("e")
-			e.Lambda([]string{"f"}, func(e *emitter.Emitter) {
+			e.Lambda([]string{"f"}, func(e *emitter.Emitter) error {
 				e.Load("e")
 				e.Load("f")
 				e.AddInt()
 				e.ReturnValue()
+				return nil
 			})
 			e.ReturnValue()
+			return nil
 		})
 		e.ReturnValue()
+		return nil
 	})
 	e.PushInt(1)
 	e.PushInt(2)
@@ -603,15 +629,17 @@ func TestWeirdClosure(t *testing.T) {
 func TestRecursion(t *testing.T) {
 	t.Skip()
 	e := emitter.NewEmitter()
-	e.Function("fibonacci", []string{"x"}, func(e *emitter.Emitter) {
-		e.If(func(e *emitter.Emitter) {
+	e.Function("fibonacci", []string{"x"}, func(e *emitter.Emitter) error {
+		return e.If(func(e *emitter.Emitter) error {
 			e.Load("x")
 			e.PushInt(2)
 			e.LtInt()
-		}, func(e *emitter.Emitter) {
+			return nil
+		}, func(e *emitter.Emitter) error {
 			e.Load("x")
 			e.ReturnValue()
-		}, func(e *emitter.Emitter) {
+			return nil
+		}, func(e *emitter.Emitter) error {
 			e.Load("x")
 			e.PushInt(1)
 			e.SubInt()
@@ -629,6 +657,7 @@ func TestRecursion(t *testing.T) {
 			e.AddInt()
 
 			e.ReturnValue()
+			return nil
 		})
 	})
 	e.PushInt(10)

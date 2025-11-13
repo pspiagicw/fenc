@@ -6,7 +6,7 @@ import (
 	"github.com/pspiagicw/goreland"
 )
 
-type CompileFunc func(*Emitter)
+type CompileFunc func(*Emitter) error
 
 type ByteCode struct {
 	Tape      []code.Instruction
@@ -88,14 +88,20 @@ func (e *Emitter) PushFunction(value object.Function) {
 	e.Emit(code.PUSH, index)
 }
 
-func (e *Emitter) If(cond, consequence, alternative CompileFunc) {
+func (e *Emitter) If(cond, consequence, alternative CompileFunc) error {
 
 	// Emit the condition
-	cond(e)
+	err := cond(e)
+	if err != nil {
+		return err
+	}
 
 	condPos := e.Emit(code.JUMP_FALSE, 0)
 
-	consequence(e)
+	err = consequence(e)
+	if err != nil {
+		return err
+	}
 
 	jumpEndPos := -1
 	if alternative != nil {
@@ -105,10 +111,15 @@ func (e *Emitter) If(cond, consequence, alternative CompileFunc) {
 	e.Patch(condPos)
 
 	if alternative != nil {
-		alternative(e)
+		err = alternative(e)
+		if err != nil {
+			return err
+		}
 
 		e.Patch(jumpEndPos)
 	}
+
+	return nil
 
 }
 func (e *Emitter) Return() {
