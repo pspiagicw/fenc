@@ -50,8 +50,7 @@ func (vm *VM) pushFrame(f *Frame) {
 	vm.framePointer++
 }
 
-func NewVM(e *emitter.Emitter) *VM {
-	bytecode := e.Bytecode()
+func NewVM(bytecode emitter.ByteCode) *VM {
 	frames := make([]*Frame, MaxFrames)
 	frames[0] = NewFrame(bytecode.Tape)
 	return &VM{

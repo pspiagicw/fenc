@@ -873,7 +873,7 @@ func TestToFloat(t *testing.T) {
 	testVM(t, e, expected)
 }
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
-	vm := NewVM(e)
+	vm := NewVM(e.Bytecode())
 
 	vm.Run()
 
@@ -882,7 +882,7 @@ func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 }
 
 func testVMStackEmpty(t *testing.T, e *emitter.Emitter, expected object.Object) {
-	vm := NewVM(e)
+	vm := NewVM(e.Bytecode())
 
 	vm.Run()
 
