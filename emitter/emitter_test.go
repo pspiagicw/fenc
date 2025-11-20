@@ -1033,7 +1033,7 @@ func TestToFloat(t *testing.T) {
 
 func TestBuiltinPrint(t *testing.T) {
 	e := getEmitter()
-	e.Builtin("print")
+	e.Load("print")
 
 	expected := []code.Instruction{
 		createInstruction(code.BUILTIN, 0),

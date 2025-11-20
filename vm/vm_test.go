@@ -874,7 +874,7 @@ func TestToFloat(t *testing.T) {
 func TestPrint(t *testing.T) {
 	e := emitter.NewEmitter()
 	e.PushString("hello, world")
-	e.Builtin("print")
+	e.Load("print")
 	e.Call(1)
 
 	testVMStackEmpty(t, e)

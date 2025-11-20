@@ -159,11 +159,25 @@ func (vm *VM) Builtin(id int) {
 				formatString := args[0]
 				fmt.Println(formatString.String())
 
-				return formatString
+				return object.Null{}
 			},
 		}
 
 		vm.Push(print)
+	}
+
+	if id == 1 {
+		str := object.Builtin{
+			Internal: func(args []object.Object) object.Object {
+				value := args[0].String()
+
+				return object.String{
+					Value: value,
+				}
+			},
+		}
+
+		vm.Push(str)
 	}
 }
 func (vm *VM) ToFloat() {
@@ -244,7 +258,11 @@ func (vm *VM) execBuiltin(o object.Object, numArgs int) {
 		goreland.LogFatal("Can't cast to builtin")
 	}
 
-	_ = b.Internal(args)
+	returnValue := b.Internal(args)
+
+	if returnValue.Type() != object.NULL {
+		vm.Push(returnValue)
+	}
 }
 func (vm *VM) Call(numArgs int) {
 	o := vm.Pop()

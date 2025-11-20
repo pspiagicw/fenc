@@ -229,3 +229,17 @@ func (b Builtin) String() string {
 func (b Builtin) Content() string {
 	return "builtin"
 }
+
+type Null struct {
+}
+
+func (n Null) Type() CType {
+	return NULL
+}
+
+func (n Null) String() string {
+	return "null"
+}
+func (n Null) Content() string {
+	return "null"
+}

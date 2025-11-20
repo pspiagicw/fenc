@@ -1,5 +1,10 @@
 package emitter
 
+var BuiltinMap = map[string]int{
+	"print": 0,
+	"str":   1,
+}
+
 type SymbolTable struct {
 	Outer *SymbolTable
 
@@ -16,11 +21,13 @@ func NewSymbolTable() *SymbolTable {
 		Free:       []Symbol{},
 	}
 	s.DefineBuiltin("print")
+	s.DefineBuiltin("str")
 
 	return s
 }
 func (s *SymbolTable) DefineBuiltin(name string) {
-	b := Symbol{Name: name, Index: s.storeIndex, Scope: BUILTIN_SCOPE}
+	bid := BuiltinMap[name]
+	b := Symbol{Name: name, Index: bid, Scope: BUILTIN_SCOPE}
 	s.store[name] = b
 }
 
