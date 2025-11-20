@@ -15,11 +15,13 @@ const (
 	BOOL     CType = "bool"
 	STRING   CType = "string"
 	FUNCTION CType = "function"
+	BUILTIN  CType = "builtin"
 	CLOSURE  CType = "CLOSURE"
 	ARRAY    CType = "ARRAY"
 	HASH     CType = "HASH"
 	CLASS    CType = "CLASS"
 	INSTANCE CType = "INSTANCE"
+	NULL     CType = "NULL"
 )
 
 type Object interface {
@@ -212,4 +214,18 @@ func (i Instance) String() string {
 }
 func (i Instance) Content() string {
 	return "instance"
+}
+
+type Builtin struct {
+	Internal func([]Object) Object
+}
+
+func (b Builtin) Type() CType {
+	return BUILTIN
+}
+func (b Builtin) String() string {
+	return "builtin"
+}
+func (b Builtin) Content() string {
+	return "builtin"
 }

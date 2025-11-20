@@ -1,10 +1,16 @@
 package emitter
 
 import (
+	"fmt"
+
 	"github.com/pspiagicw/fenc/code"
 	"github.com/pspiagicw/fenc/object"
 	"github.com/pspiagicw/goreland"
 )
+
+var BuiltinMap = map[string]int{
+	"print": 0,
+}
 
 type CompileFunc func(*Emitter) error
 
@@ -317,4 +323,14 @@ func (e *Emitter) AddString() {
 
 func (e *Emitter) ToFloat() {
 	e.Emit(code.TO_FLOAT)
+}
+
+func (e *Emitter) Builtin(name string) error {
+	bc, ok := BuiltinMap[name]
+	if !ok {
+		return fmt.Errorf("No builtin named: %s", name)
+	}
+	e.Emit(code.BUILTIN, bc)
+
+	return nil
 }

@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/pspiagicw/fenc/code"
@@ -142,10 +143,27 @@ func (vm *VM) Run() {
 			vm.Access()
 		case code.TO_FLOAT:
 			vm.ToFloat()
+		case code.BUILTIN:
+			vm.Builtin(ins.Args[0])
 		default:
 			goreland.LogFatal("Invalid Op: %s", ins.OpCode)
 		}
 		vm.currentFrame().ip += 1
+	}
+}
+func (vm *VM) Builtin(id int) {
+	// TODO: Implement a proper bulitin map or something.
+	if id == 0 {
+		print := object.Builtin{
+			Internal: func(args []object.Object) object.Object {
+				formatString := args[0]
+				fmt.Println(formatString.String())
+
+				return formatString
+			},
+		}
+
+		vm.Push(print)
 	}
 }
 func (vm *VM) ToFloat() {
@@ -215,7 +233,29 @@ func (vm *VM) Return() {
 	f := vm.popFrame()
 	vm.stackPointer = f.oldPointer
 }
+func (vm *VM) execBuiltin(o object.Object, numArgs int) {
+	args := make([]object.Object, MaxLocals)
+	for i := numArgs - 1; i >= 0; i-- {
+		args[i] = vm.Pop()
+	}
+
+	b, ok := o.(object.Builtin)
+	if !ok {
+		goreland.LogFatal("Can't cast to builtin")
+	}
+
+	_ = b.Internal(args)
+}
 func (vm *VM) Call(numArgs int) {
+	o := vm.Pop()
+
+	if o.Type() == object.BUILTIN {
+		vm.execBuiltin(o, numArgs)
+		return
+	} else {
+		vm.Push(o)
+	}
+
 	fn := vm.PopClosure()
 
 	args := make([]object.Object, MaxLocals)

@@ -57,6 +57,8 @@ const (
 	ACCESS
 
 	TO_FLOAT
+
+	BUILTIN
 )
 
 type Instruction struct {

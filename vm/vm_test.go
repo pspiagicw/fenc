@@ -466,9 +466,7 @@ func TestLambdaWithNoReturn(t *testing.T) {
 	})
 	e.Call(0)
 
-	expected := object.CreateInt(2)
-
-	testVMStackEmpty(t, e, expected)
+	testVMStackEmpty(t, e)
 }
 func TestLambdaWithReturn(t *testing.T) {
 	e := emitter.NewEmitter()
@@ -872,6 +870,15 @@ func TestToFloat(t *testing.T) {
 
 	testVM(t, e, expected)
 }
+
+func TestPrint(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushString("hello, world")
+	e.Builtin("print")
+	e.Call(1)
+
+	testVMStackEmpty(t, e)
+}
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 	vm := NewVM(e.Bytecode())
 
@@ -881,7 +888,7 @@ func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 	assert.Equal(t, o, expected, "Result not equal!")
 }
 
-func testVMStackEmpty(t *testing.T, e *emitter.Emitter, expected object.Object) {
+func testVMStackEmpty(t *testing.T, e *emitter.Emitter) {
 	vm := NewVM(e.Bytecode())
 
 	vm.Run()

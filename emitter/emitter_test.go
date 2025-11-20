@@ -1031,6 +1031,20 @@ func TestToFloat(t *testing.T) {
 	testEmitter(t, e, expected, constants)
 }
 
+func TestBuiltinPrint(t *testing.T) {
+	e := getEmitter()
+	e.Builtin("print")
+
+	expected := []code.Instruction{
+		createInstruction(code.BUILTIN, 0),
+	}
+
+	constants := []object.Object{}
+
+	testEmitter(t, e, expected, constants)
+
+}
+
 func createArgs(args ...int) []int {
 	return args
 }
