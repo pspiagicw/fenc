@@ -9,12 +9,19 @@ type SymbolTable struct {
 }
 
 func NewSymbolTable() *SymbolTable {
-	return &SymbolTable{
+	s := &SymbolTable{
 		Outer:      nil,
 		store:      map[string]Symbol{},
 		storeIndex: 0,
 		Free:       []Symbol{},
 	}
+	s.DefineBuiltin("print")
+
+	return s
+}
+func (s *SymbolTable) DefineBuiltin(name string) {
+	b := Symbol{Name: name, Index: s.storeIndex, Scope: BUILTIN_SCOPE}
+	s.store[name] = b
 }
 
 func NewEnclosedSymbolTable(s *SymbolTable) *SymbolTable {
@@ -32,9 +39,10 @@ type Symbol struct {
 type SymbolScope string
 
 const (
-	GLOBAL_SCOPE SymbolScope = "GLOBAL"
-	LOCAL_SCOPE  SymbolScope = "LOCAL"
-	FREE_SCOPE   SymbolScope = "FREE"
+	GLOBAL_SCOPE  SymbolScope = "GLOBAL"
+	LOCAL_SCOPE   SymbolScope = "LOCAL"
+	FREE_SCOPE    SymbolScope = "FREE"
+	BUILTIN_SCOPE SymbolScope = "BUILTIN"
 )
 
 func (s *SymbolTable) Define(name string) Symbol {

@@ -166,6 +166,9 @@ func (e *Emitter) Load(name string) bool {
 		e.Emit(code.LOAD_LOCAL, s.Index)
 	case FREE_SCOPE:
 		e.Emit(code.LOAD_FREE, s.Index)
+	case BUILTIN_SCOPE:
+		e.Emit(code.BUILTIN, 0)
+
 	}
 
 	return ok
