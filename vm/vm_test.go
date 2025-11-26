@@ -624,6 +624,44 @@ func TestWeirdClosure(t *testing.T) {
 	testVM(t, e, expected)
 
 }
+func TestBasicRecursion(t *testing.T) {
+	t.Skip()
+	e := emitter.NewEmitter()
+	e.Function("countDown", []string{"x"}, func(e *emitter.Emitter) error {
+		e.If(
+			func(e *emitter.Emitter) error {
+				e.Load("x")
+				e.PushInt(0)
+				e.Eq()
+				return nil
+			},
+			func(e *emitter.Emitter) error {
+				e.PushInt(0)
+				e.Return()
+				return nil
+			},
+			func(e *emitter.Emitter) error {
+				e.Load("x")
+				e.PushInt(1)
+				e.SubInt()
+
+				e.Load("countDown")
+				e.Call(1)
+
+				return nil
+			},
+		)
+
+		e.PushInt(1)
+		e.Load("countDown")
+		e.Call(1)
+		return nil
+	})
+
+	expected := object.CreateInt(0)
+
+	testVM(t, e, expected)
+}
 func TestRecursion(t *testing.T) {
 	t.Skip()
 	e := emitter.NewEmitter()
