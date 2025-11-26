@@ -1036,7 +1036,7 @@ func TestBuiltinPrint(t *testing.T) {
 	e.Load("print")
 
 	expected := []code.Instruction{
-		createInstruction(code.BUILTIN, 0),
+		createInstruction(code.BUILTIN, 1),
 	}
 
 	constants := []object.Object{}

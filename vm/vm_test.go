@@ -879,6 +879,20 @@ func TestPrint(t *testing.T) {
 
 	testVMStackEmpty(t, e)
 }
+
+func TestAssignment(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushString("some value")
+	e.Store("x")
+	e.PushString("some other value")
+	e.Store("x")
+	e.PushString("some stack value")
+	e.Load("x")
+
+	expected := object.CreateString("some other value")
+
+	testVM(t, e, expected)
+}
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 	vm := NewVM(e.Bytecode())
 

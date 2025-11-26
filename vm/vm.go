@@ -1,7 +1,6 @@
 package vm
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/pspiagicw/fenc/code"
@@ -152,33 +151,8 @@ func (vm *VM) Run() {
 	}
 }
 func (vm *VM) Builtin(id int) {
-	// TODO: Implement a proper bulitin map or something.
-	if id == 0 {
-		print := object.Builtin{
-			Internal: func(args []object.Object) object.Object {
-				formatString := args[0]
-				fmt.Println(formatString.String())
-
-				return object.Null{}
-			},
-		}
-
-		vm.Push(print)
-	}
-
-	if id == 1 {
-		str := object.Builtin{
-			Internal: func(args []object.Object) object.Object {
-				value := args[0].String()
-
-				return object.String{
-					Value: value,
-				}
-			},
-		}
-
-		vm.Push(str)
-	}
+	b := emitter.BuiltinMap[id]
+	vm.Push(b)
 }
 func (vm *VM) ToFloat() {
 	value := vm.PopInt()
@@ -264,17 +238,13 @@ func (vm *VM) execBuiltin(o object.Object, numArgs int) {
 		vm.Push(returnValue)
 	}
 }
-func (vm *VM) Call(numArgs int) {
-	o := vm.Pop()
 
-	if o.Type() == object.BUILTIN {
-		vm.execBuiltin(o, numArgs)
-		return
-	} else {
-		vm.Push(o)
+func (vm *VM) execFunction(o object.Object, numArgs int) {
+	fn, ok := o.(object.Closure)
+
+	if !ok {
+		goreland.LogFatal("Can't cast object to closure.")
 	}
-
-	fn := vm.PopClosure()
 
 	args := make([]object.Object, MaxLocals)
 	for i := numArgs - 1; i >= 0; i-- {
@@ -289,7 +259,17 @@ func (vm *VM) Call(numArgs int) {
 	newFrame.free = fn.Free
 
 	vm.pushFrame(newFrame)
+}
+func (vm *VM) Call(numArgs int) {
+	o := vm.Pop()
 
+	if o.Type() == object.BUILTIN {
+		vm.execBuiltin(o, numArgs)
+	} else if o.Type() == object.CLOSURE {
+		vm.execFunction(o, numArgs)
+	} else {
+		goreland.LogFatal("Can't execute object of type: %v", o)
+	}
 }
 func (vm *VM) Closure(constId int, numFree int) {
 	fn := vm.getConstant(constId)

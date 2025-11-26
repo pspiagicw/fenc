@@ -1,8 +1,35 @@
 package emitter
 
-var BuiltinMap = map[string]int{
-	"print": 0,
-	"str":   1,
+import (
+	"fmt"
+
+	"github.com/pspiagicw/fenc/object"
+)
+
+const (
+	_ int = iota
+	PRINT
+	STRI
+)
+
+var BuiltinMap = map[int]object.Builtin{
+	PRINT: {
+		Internal: func(args []object.Object) object.Object {
+			formatString := args[0]
+			fmt.Println(formatString.String())
+
+			return object.Null{}
+		},
+	},
+	STRI: {
+		Internal: func(args []object.Object) object.Object {
+			value := args[0].String()
+
+			return object.String{
+				Value: value,
+			}
+		},
+	},
 }
 
 type SymbolTable struct {
@@ -20,13 +47,12 @@ func NewSymbolTable() *SymbolTable {
 		storeIndex: 0,
 		Free:       []Symbol{},
 	}
-	s.DefineBuiltin("print")
-	s.DefineBuiltin("str")
+	s.DefineBuiltin("print", PRINT)
+	s.DefineBuiltin("stri", STRI)
 
 	return s
 }
-func (s *SymbolTable) DefineBuiltin(name string) {
-	bid := BuiltinMap[name]
+func (s *SymbolTable) DefineBuiltin(name string, bid int) {
 	b := Symbol{Name: name, Index: bid, Scope: BUILTIN_SCOPE}
 	s.store[name] = b
 }
@@ -53,6 +79,10 @@ const (
 )
 
 func (s *SymbolTable) Define(name string) Symbol {
+	if existing, ok := s.Resolve(name); ok {
+		// Use existing variable symbol
+		return existing
+	}
 	symbol := Symbol{Name: name, Index: s.storeIndex, Scope: GLOBAL_SCOPE}
 	if s.Outer != nil {
 		symbol.Scope = LOCAL_SCOPE
