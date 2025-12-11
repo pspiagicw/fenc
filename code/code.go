@@ -58,6 +58,8 @@ const (
 
 	TO_FLOAT
 
+	CLASS
+
 	BUILTIN
 )
 

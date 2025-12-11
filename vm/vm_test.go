@@ -931,6 +931,19 @@ func TestAssignment(t *testing.T) {
 
 	testVM(t, e, expected)
 }
+
+func TestClass(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.Class("Something")
+
+	expected := object.Class{
+		Name: "Something",
+	}
+
+	testVM(t, e, expected)
+
+}
+
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 	vm := NewVM(e.Bytecode())
 

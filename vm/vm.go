@@ -144,11 +144,22 @@ func (vm *VM) Run() {
 			vm.ToFloat()
 		case code.BUILTIN:
 			vm.Builtin(ins.Args[0])
+		case code.CLASS:
+			vm.Class()
 		default:
 			goreland.LogFatal("Invalid Op: %s", ins.OpCode)
 		}
 		vm.currentFrame().ip += 1
 	}
+}
+func (vm *VM) Class() {
+	name := vm.PopString()
+
+	class := object.Class{
+		Name: name.Value,
+	}
+
+	vm.Push(class)
 }
 func (vm *VM) Builtin(id int) {
 	b := emitter.BuiltinMap[id]
@@ -177,6 +188,7 @@ func (vm *VM) Access() {
 	key := vm.Pop()
 	hash := vm.PopHash()
 
+	// TODO: Check if key exists
 	val := hash.Values[key]
 
 	vm.Push(val)
@@ -185,6 +197,7 @@ func (vm *VM) Index() {
 	index := vm.PopInt()
 	arr := vm.PopArray()
 
+	// TODO: Check if index exists.
 	val := arr.Values[index.Value]
 
 	vm.Push(val)
@@ -535,8 +548,11 @@ func (vm *VM) PushConstant(index int) {
 	o := vm.getConstant(index)
 
 	vm.Push(o)
-
 }
+
 func (vm *VM) Peek() object.Object {
+	if vm.stackPointer == 0 {
+		return object.CreateString("VOIDDD")
+	}
 	return vm.stack[vm.stackPointer-1]
 }

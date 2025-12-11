@@ -228,12 +228,19 @@ func (e *Emitter) Lambda(args []string, body CompileFunc) error {
 
 	return nil
 }
+
+func (e *Emitter) Class(name string) {
+	e.PushString(name)
+
+	e.Emit(code.CLASS)
+}
 func (e *Emitter) Array(count int) {
 	e.Emit(code.ARRAY, count)
 }
 func (e *Emitter) Hash(count int) {
 	e.Emit(code.HASH, count)
 }
+
 func (e *Emitter) Index() {
 	e.Emit(code.INDEX)
 }

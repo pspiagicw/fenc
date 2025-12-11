@@ -3,6 +3,7 @@ package object
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/pspiagicw/fenc/code"
 )
@@ -131,6 +132,7 @@ func (f String) Content() string {
 }
 
 type Function struct {
+	// TODO: Change the string and content function
 	Value []code.Instruction
 }
 
@@ -145,6 +147,7 @@ func (f Function) Content() string {
 }
 
 type Closure struct {
+	// TODO: Change the string and content function
 	Value Function
 	Free  []Object
 }
@@ -167,7 +170,19 @@ func (a Array) Type() CType {
 	return ARRAY
 }
 func (a Array) String() string {
-	return "array"
+
+	values := []string{}
+
+	for _, value := range a.Values {
+		values = append(values, value.String())
+	}
+
+	valuesStr := strings.Join(values, ",")
+
+	elements := []string{"[", valuesStr, "]"}
+
+	return strings.Join(elements, "")
+
 }
 func (a Array) Content() string {
 	return "array"
@@ -217,6 +232,7 @@ func (i Instance) Content() string {
 }
 
 type Builtin struct {
+	Name     string
 	Internal func([]Object) Object
 }
 

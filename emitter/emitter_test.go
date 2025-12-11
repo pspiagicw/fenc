@@ -1042,7 +1042,22 @@ func TestBuiltinPrint(t *testing.T) {
 	constants := []object.Object{}
 
 	testEmitter(t, e, expected, constants)
+}
 
+func TestClassEmpty(t *testing.T) {
+	e := getEmitter()
+	e.Class("Something")
+
+	expected := []code.Instruction{
+		createInstruction(code.PUSH, 0),
+		createInstruction(code.CLASS),
+	}
+
+	constants := []object.Object{
+		object.CreateString("Something"),
+	}
+
+	testEmitter(t, e, expected, constants)
 }
 
 func createArgs(args ...int) []int {
