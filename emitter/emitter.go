@@ -147,7 +147,7 @@ func (e *Emitter) Store(name string) {
 	}
 }
 
-func (e *Emitter) Load(name string) bool {
+func (e *Emitter) Load(name string) error {
 	s, ok := e.symbols.Resolve(name)
 	if !ok {
 		goreland.LogFatal("Can't find symbol: %s", name)

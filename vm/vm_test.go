@@ -918,6 +918,53 @@ func TestPrint(t *testing.T) {
 	testVMStackEmpty(t, e)
 }
 
+func TestLen(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushString("this")
+	e.Load("len")
+	e.Call(1)
+
+	expected := object.CreateInt(4)
+
+	testVM(t, e, expected)
+}
+
+func TestArrayPush(t *testing.T) {
+	e := emitter.NewEmitter()
+	e.PushString("one item")
+	e.PushString("second item")
+	e.Array(2)
+	e.PushString("third item")
+	e.Load("push")
+	e.Call(2)
+
+	expected := object.CreateArray(
+		[]object.Object{
+			object.CreateString("one item"),
+			object.CreateString("second item"),
+			object.CreateString("third item"),
+		},
+	)
+
+	testVM(t, e, expected)
+}
+
+// Add other builtins
+
+// TODO: len
+// TODO: push
+// TODO: pop
+// TODO: sqrt
+// TODO: exp
+// TODO: min
+// TODO: min/max
+// TODO: string
+// TODO: lowercase
+// TODO: uppercase
+// TODO: count
+// TODO: type (most important)
+// TODO: exit
+
 func TestAssignment(t *testing.T) {
 	e := emitter.NewEmitter()
 	e.PushString("some value")
