@@ -1,9 +1,10 @@
 package emitter
 
 import (
+	"fmt"
+
 	"github.com/pspiagicw/fenc/code"
 	"github.com/pspiagicw/fenc/object"
-	"github.com/pspiagicw/goreland"
 )
 
 type CompileFunc func(*Emitter) error
@@ -18,8 +19,18 @@ type Emitter struct {
 	tapeIndex int
 	constants *ConstantPool
 	symbols   *SymbolTable
+
+	errors []error
 }
 
+func (e *Emitter) registerError(msg string, values ...any) {
+	err := fmt.Errorf(msg, values...)
+	e.errors = append(e.errors, err)
+}
+
+func (e *Emitter) Errors() []error {
+	return e.errors
+}
 func (e *Emitter) enterScope() {
 	e.symbols = NewEnclosedSymbolTable(e.symbols)
 }
@@ -129,7 +140,7 @@ func (e *Emitter) Return() {
 func (e *Emitter) Patch(jumpPos int) {
 	ins := e.tape[jumpPos]
 	if ins.OpCode != code.JUMP && ins.OpCode != code.JUMP_FALSE {
-		goreland.LogFatal("Given instructions is not a jump instruction.")
+		e.registerError("Given instructions is not jump instruction.")
 	}
 
 	ins.Args = []int{e.tapeIndex}
@@ -147,10 +158,10 @@ func (e *Emitter) Store(name string) {
 	}
 }
 
-func (e *Emitter) Load(name string) error {
+func (e *Emitter) Load(name string) bool {
 	s, ok := e.symbols.Resolve(name)
 	if !ok {
-		goreland.LogFatal("Can't find symbol: %s", name)
+		e.registerError("Can't find symbol: %s", name)
 	}
 
 	switch s.Scope {

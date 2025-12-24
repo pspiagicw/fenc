@@ -992,6 +992,16 @@ func TestClass(t *testing.T) {
 }
 
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
+	errs := e.Errors()
+
+	if len(errs) != 0 {
+		t.Errorf("Emitter errors is not empty.")
+		for _, err := range errs {
+			t.Error(err)
+		}
+		t.Fatal()
+	}
+
 	vm := NewVM(e.Bytecode())
 
 	vm.Run()
