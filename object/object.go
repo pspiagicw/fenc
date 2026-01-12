@@ -232,8 +232,7 @@ func (i Instance) Content() string {
 }
 
 type Builtin struct {
-	Name     string
-	Internal func([]Object) Object
+	Internal func(...Object) Object
 }
 
 func (b Builtin) Type() CType {

@@ -1,36 +1,24 @@
 package emitter
 
-import (
-	"fmt"
-
-	"github.com/pspiagicw/fenc/object"
-)
-
-const (
-	_ int = iota
-	PRINT
-	STRI
-)
-
-var BuiltinMap = map[int]object.Builtin{
-	PRINT: {
-		Internal: func(args []object.Object) object.Object {
-			formatString := args[0]
-			fmt.Println(formatString.String())
-
-			return object.Null{}
-		},
-	},
-	STRI: {
-		Internal: func(args []object.Object) object.Object {
-			value := args[0].String()
-
-			return object.String{
-				Value: value,
-			}
-		},
-	},
-}
+// var BuiltinMap = map[int]object.Builtin{
+// 	PRINT: {
+// 		Internal: func(args []object.Object) object.Object {
+// 			formatString := args[0]
+// 			fmt.Println(formatString.String())
+//
+// 			return object.Null{}
+// 		},
+// 	},
+// 	STRI: {
+// 		Internal: func(args []object.Object) object.Object {
+// 			value := args[0].String()
+//
+// 			return object.String{
+// 				Value: value,
+// 			}
+// 		},
+// 	},
+// }
 
 type SymbolTable struct {
 	Outer *SymbolTable
@@ -47,8 +35,6 @@ func NewSymbolTable() *SymbolTable {
 		storeIndex: 0,
 		Free:       []Symbol{},
 	}
-	s.DefineBuiltin("print", PRINT)
-	s.DefineBuiltin("stri", STRI)
 
 	return s
 }

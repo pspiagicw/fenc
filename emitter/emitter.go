@@ -4,7 +4,11 @@ import (
 	"github.com/pspiagicw/fenc/code"
 	"github.com/pspiagicw/fenc/object"
 	"github.com/pspiagicw/goreland"
+	"maps"
+	"slices"
 )
+
+// type BuiltinFunc func(args ...object.Object) object.Object
 
 type CompileFunc func(*Emitter) error
 
@@ -18,6 +22,7 @@ type Emitter struct {
 	tapeIndex int
 	constants *ConstantPool
 	symbols   *SymbolTable
+	builtins  map[string]object.Builtin
 }
 
 func (e *Emitter) enterScope() {
@@ -27,19 +32,29 @@ func (e *Emitter) leaveScope() {
 	e.symbols = e.symbols.Outer
 }
 func (e *Emitter) NewSubEmitter() *Emitter {
-	n := NewEmitter()
+	n := NewEmitter(e.builtins)
 	n.constants = e.constants
 	n.symbols = e.symbols
 
 	return n
 }
 
-func NewEmitter() *Emitter {
-	return &Emitter{
+func NewEmitter(builtins map[string]object.Builtin) *Emitter {
+	e := &Emitter{
+		builtins:  builtins,
 		constants: NewConstantPool(),
 		tape:      []code.Instruction{},
 		tapeIndex: 0,
 		symbols:   NewSymbolTable(),
+	}
+	e.setupBuiltins()
+	return e
+}
+func (e *Emitter) setupBuiltins() {
+	sortedKeys := slices.Sorted(maps.Keys(e.builtins))
+
+	for i, key := range sortedKeys {
+		e.symbols.DefineBuiltin(key, i)
 	}
 }
 func (e *Emitter) Bytecode() ByteCode {
@@ -165,7 +180,7 @@ func (e *Emitter) Load(name string) error {
 
 	}
 
-	return ok
+	return nil
 }
 
 func (e *Emitter) Function(name string, args []string, body CompileFunc) error {

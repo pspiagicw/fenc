@@ -1,12 +1,23 @@
 package emitter
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
 	"github.com/pspiagicw/fenc/code"
 	"github.com/pspiagicw/fenc/object"
 )
+
+var builtins = map[string]object.Builtin{
+	"print": {
+		Internal: func(args ...object.Object) object.Object {
+			for _, o := range args {
+				fmt.Println(o)
+			}
+			return object.Null{}
+		}},
+}
 
 func TestPush(t *testing.T) {
 
@@ -1036,7 +1047,7 @@ func TestBuiltinPrint(t *testing.T) {
 	e.Load("print")
 
 	expected := []code.Instruction{
-		createInstruction(code.BUILTIN, 1),
+		createInstruction(code.BUILTIN, 0),
 	}
 
 	constants := []object.Object{}
@@ -1068,7 +1079,7 @@ func createInstruction(op code.Op, args ...int) code.Instruction {
 }
 
 func getEmitter() *Emitter {
-	e := NewEmitter()
+	e := NewEmitter(builtins)
 
 	return e
 }

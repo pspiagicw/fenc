@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
@@ -9,8 +10,17 @@ import (
 	"github.com/pspiagicw/fenc/object"
 )
 
+var builtins = map[string]object.Builtin{
+	"print": object.Builtin{Internal: func(args ...object.Object) object.Object {
+		for _, o := range args {
+			fmt.Println(o)
+		}
+		return object.Null{}
+	}},
+}
+
 func TestPush(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(1)
 
 	expected := object.CreateInt(1)
@@ -19,7 +29,7 @@ func TestPush(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(1)
 	e.PushInt(1)
 	e.AddInt()
@@ -33,7 +43,7 @@ func TestAdd(t *testing.T) {
 // ==========================
 
 func TestAddInt(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(2)
 	e.PushInt(3)
 	e.AddInt()
@@ -41,7 +51,7 @@ func TestAddInt(t *testing.T) {
 }
 
 func TestSubInt(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(5)
 	e.PushInt(3)
 	e.SubInt()
@@ -49,7 +59,7 @@ func TestSubInt(t *testing.T) {
 }
 
 func TestMulInt(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(4)
 	e.PushInt(3)
 	e.MulInt()
@@ -57,7 +67,7 @@ func TestMulInt(t *testing.T) {
 }
 
 func TestDivInt(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(10)
 	e.PushInt(2)
 	e.DivInt()
@@ -69,7 +79,7 @@ func TestDivInt(t *testing.T) {
 // ==========================
 
 func TestLtInt(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(2)
 	e.PushInt(5)
 	e.LtInt()
@@ -77,7 +87,7 @@ func TestLtInt(t *testing.T) {
 }
 
 func TestLteInt(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(5)
 	e.PushInt(5)
 	e.LteInt()
@@ -85,7 +95,7 @@ func TestLteInt(t *testing.T) {
 }
 
 func TestGtInt(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(6)
 	e.PushInt(4)
 	e.GtInt()
@@ -93,7 +103,7 @@ func TestGtInt(t *testing.T) {
 }
 
 func TestGteInt(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(5)
 	e.PushInt(5)
 	e.GteInt()
@@ -101,7 +111,7 @@ func TestGteInt(t *testing.T) {
 }
 
 func TestEqInt(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(7)
 	e.PushInt(7)
 	e.Eq()
@@ -109,7 +119,7 @@ func TestEqInt(t *testing.T) {
 }
 
 func TestNeqInt(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(8)
 	e.PushInt(9)
 	e.Neq()
@@ -121,7 +131,7 @@ func TestNeqInt(t *testing.T) {
 // ==========================
 
 func TestAddFloat(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushFloat(1.5)
 	e.PushFloat(2.5)
 	e.AddFloat()
@@ -129,7 +139,7 @@ func TestAddFloat(t *testing.T) {
 }
 
 func TestSubFloat(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushFloat(5.5)
 	e.PushFloat(2.5)
 	e.SubFloat()
@@ -137,7 +147,7 @@ func TestSubFloat(t *testing.T) {
 }
 
 func TestMulFloat(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushFloat(2.0)
 	e.PushFloat(4.0)
 	e.MulFloat()
@@ -145,7 +155,7 @@ func TestMulFloat(t *testing.T) {
 }
 
 func TestDivFloat(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushFloat(27.0)
 	e.PushFloat(9.0)
 	e.DivFloat()
@@ -157,7 +167,7 @@ func TestDivFloat(t *testing.T) {
 // ==========================
 
 func TestLtFloat(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushFloat(1.2)
 	e.PushFloat(2.4)
 	e.LtFloat()
@@ -165,7 +175,7 @@ func TestLtFloat(t *testing.T) {
 }
 
 func TestLteFloat(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushFloat(3.3)
 	e.PushFloat(3.3)
 	e.LteFloat()
@@ -173,7 +183,7 @@ func TestLteFloat(t *testing.T) {
 }
 
 func TestGtFloat(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushFloat(4.5)
 	e.PushFloat(3.2)
 	e.GtFloat()
@@ -181,7 +191,7 @@ func TestGtFloat(t *testing.T) {
 }
 
 func TestGteFloat(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushFloat(3.5)
 	e.PushFloat(3.5)
 	e.GteFloat()
@@ -189,7 +199,7 @@ func TestGteFloat(t *testing.T) {
 }
 
 func TestEqFloat(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushFloat(2.5)
 	e.PushFloat(2.5)
 	e.Eq()
@@ -197,7 +207,7 @@ func TestEqFloat(t *testing.T) {
 }
 
 func TestNeqFloat(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushFloat(2.5)
 	e.PushFloat(3.5)
 	e.Neq()
@@ -209,7 +219,7 @@ func TestNeqFloat(t *testing.T) {
 // ==========================
 
 func TestAndBool(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushBool(false)
 	e.PushBool(true)
 	e.AndBool()
@@ -217,7 +227,7 @@ func TestAndBool(t *testing.T) {
 }
 
 func TestOrBool(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushBool(true)
 	e.PushBool(false)
 	e.OrBool()
@@ -225,7 +235,7 @@ func TestOrBool(t *testing.T) {
 }
 
 func TestEqBool(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushBool(false)
 	e.PushBool(true)
 	e.Eq()
@@ -233,7 +243,7 @@ func TestEqBool(t *testing.T) {
 }
 
 func TestNeqBool(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushBool(true)
 	e.PushBool(false)
 	e.Neq()
@@ -245,7 +255,7 @@ func TestNeqBool(t *testing.T) {
 // ==========================
 
 func TestAddString(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushString("Hello, ")
 	e.PushString("World!")
 	e.AddString()
@@ -253,7 +263,7 @@ func TestAddString(t *testing.T) {
 }
 
 func TestEqString(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushString("foo")
 	e.PushString("foo")
 	e.Eq()
@@ -261,7 +271,7 @@ func TestEqString(t *testing.T) {
 }
 
 func TestNeqString(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushString("foo")
 	e.PushString("bar")
 	e.Neq()
@@ -269,7 +279,7 @@ func TestNeqString(t *testing.T) {
 }
 
 func TestIf(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 
 	e.If(
 		func(e *emitter.Emitter) error {
@@ -290,7 +300,7 @@ func TestIf(t *testing.T) {
 }
 
 func TestIf_FalseBranch(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 
 	e.If(
 		func(e *emitter.Emitter) error { // condition
@@ -310,7 +320,7 @@ func TestIf_FalseBranch(t *testing.T) {
 	testVM(t, e, object.CreateInt(99))
 }
 func TestIf_True_NoElse(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 
 	e.If(
 		func(e *emitter.Emitter) error { // condition
@@ -328,7 +338,7 @@ func TestIf_True_NoElse(t *testing.T) {
 }
 
 func TestIf_Nested(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 
 	e.If(
 		func(e *emitter.Emitter) error { // outer condition
@@ -361,7 +371,7 @@ func TestIf_Nested(t *testing.T) {
 }
 
 func TestGlobalIntStoreLoad(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(42)
 	e.Store("x")
 	e.PushInt(10)
@@ -373,7 +383,7 @@ func TestGlobalIntStoreLoad(t *testing.T) {
 
 // update existing variable
 func TestGlobalVariableOverwrite(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(10)
 	e.Store("x")
 	e.PushInt(99)
@@ -387,7 +397,7 @@ func TestGlobalVariableOverwrite(t *testing.T) {
 
 // multiple variables at once
 func TestGlobalMultipleVariables(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(7)
 	e.Store("a")
 	e.PushInt(8)
@@ -404,7 +414,7 @@ func TestGlobalMultipleVariables(t *testing.T) {
 
 // variable reuse and reassign after computation
 func TestGlobalReuseAfterComputation(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(5)
 	e.Store("x")
 	e.PushInt(3)
@@ -422,7 +432,7 @@ func TestGlobalReuseAfterComputation(t *testing.T) {
 }
 
 func TestFunction(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.Function("test", []string{}, func(e *emitter.Emitter) error {
 		e.PushInt(2)
 		e.ReturnValue()
@@ -438,7 +448,7 @@ func TestFunction(t *testing.T) {
 }
 
 func TestFunctionWithArgs(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.Function("test", []string{"x", "y"}, func(e *emitter.Emitter) error {
 		e.Load("x")
 		e.Load("y")
@@ -457,7 +467,7 @@ func TestFunctionWithArgs(t *testing.T) {
 }
 
 func TestLambdaWithNoReturn(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.Lambda([]string{}, func(e *emitter.Emitter) error {
 		e.PushInt(1)
 		e.PushInt(1)
@@ -469,7 +479,7 @@ func TestLambdaWithNoReturn(t *testing.T) {
 	testVMStackEmpty(t, e)
 }
 func TestLambdaWithReturn(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(1)
 	e.PushInt(1)
 	e.Lambda([]string{"x", "y"}, func(e *emitter.Emitter) error {
@@ -489,7 +499,7 @@ func TestFunctionWithReturn(t *testing.T) {
 }
 
 func TestClosure(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.Function("newClosure", []string{"a"}, func(e *emitter.Emitter) error {
 		e.Lambda([]string{}, func(e *emitter.Emitter) error {
 			e.Load("a")
@@ -512,7 +522,7 @@ func TestClosure(t *testing.T) {
 
 }
 func TestComplexClosure(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.Function("newAdder", []string{"a", "b"}, func(e *emitter.Emitter) error {
 		e.Lambda([]string{"c"}, func(e *emitter.Emitter) error {
 			e.Load("a")
@@ -547,7 +557,7 @@ func TestComplexClosure(t *testing.T) {
 }
 
 func TestComplexClosure2(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.Function("newAdder", []string{"a", "b"}, func(e *emitter.Emitter) error {
 		e.Load("a")
 		e.Load("b")
@@ -578,7 +588,7 @@ func TestComplexClosure2(t *testing.T) {
 }
 
 func TestWeirdClosure(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.Function("newAdderOuter", []string{"a", "b"}, func(e *emitter.Emitter) error {
 		e.Load("a")
 		e.Load("b")
@@ -626,7 +636,7 @@ func TestWeirdClosure(t *testing.T) {
 }
 func TestBasicRecursion(t *testing.T) {
 	t.Skip()
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.Function("countDown", []string{"x"}, func(e *emitter.Emitter) error {
 		e.If(
 			func(e *emitter.Emitter) error {
@@ -664,7 +674,7 @@ func TestBasicRecursion(t *testing.T) {
 }
 func TestRecursion(t *testing.T) {
 	t.Skip()
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.Function("fibonacci", []string{"x"}, func(e *emitter.Emitter) error {
 		return e.If(func(e *emitter.Emitter) error {
 			e.Load("x")
@@ -716,7 +726,7 @@ func TestRecursion(t *testing.T) {
 
 // simple integer array creation
 func TestArrayBasic(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(1)
 	e.PushInt(2)
 	e.PushInt(3)
@@ -732,7 +742,7 @@ func TestArrayBasic(t *testing.T) {
 
 // array indexing
 func TestArrayIndex(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(10)
 	e.PushInt(20)
 	e.PushInt(30)
@@ -747,7 +757,7 @@ func TestArrayIndex(t *testing.T) {
 
 // nested arrays
 func TestNestedArrays(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(1)
 	e.PushInt(2)
 	e.Array(2) // [1,2]
@@ -766,7 +776,7 @@ func TestNestedArrays(t *testing.T) {
 
 // array with globals
 func TestArrayWithGlobal(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(42)
 	e.Store("x")
 
@@ -785,7 +795,7 @@ func TestArrayWithGlobal(t *testing.T) {
 
 // reuse array after mutation (conceptually re-store)
 func TestArrayOverwriteGlobal(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(1)
 	e.PushInt(2)
 	e.Array(2)
@@ -811,7 +821,7 @@ func TestArrayOverwriteGlobal(t *testing.T) {
 
 // basic hash creation
 func TestHashBasic(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushString("x")
 	e.PushInt(10)
 	e.PushString("y")
@@ -827,7 +837,7 @@ func TestHashBasic(t *testing.T) {
 
 // // hash index by string key
 func TestHashIndex(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushString("age")
 	e.PushInt(27)
 	e.Hash(1)
@@ -841,7 +851,7 @@ func TestHashIndex(t *testing.T) {
 
 // // nested hash inside array
 func TestArrayOfHashes(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushString("a")
 	e.PushInt(1)
 	e.Hash(1)
@@ -865,7 +875,7 @@ func TestArrayOfHashes(t *testing.T) {
 
 // // hash with globals and index lookup
 func TestHashGlobalAndIndex(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushString("x")
 	e.PushInt(5)
 	e.PushString("y")
@@ -883,7 +893,7 @@ func TestHashGlobalAndIndex(t *testing.T) {
 
 // // hash inside hash
 func TestNestedHash(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushString("outer")
 	e.PushString("inner")
 	e.PushInt(123)
@@ -900,7 +910,7 @@ func TestNestedHash(t *testing.T) {
 }
 
 func TestToFloat(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushInt(3)
 	e.ToFloat()
 
@@ -910,43 +920,12 @@ func TestToFloat(t *testing.T) {
 }
 
 func TestPrint(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushString("hello, world")
 	e.Load("print")
 	e.Call(1)
 
 	testVMStackEmpty(t, e)
-}
-
-func TestLen(t *testing.T) {
-	e := emitter.NewEmitter()
-	e.PushString("this")
-	e.Load("len")
-	e.Call(1)
-
-	expected := object.CreateInt(4)
-
-	testVM(t, e, expected)
-}
-
-func TestArrayPush(t *testing.T) {
-	e := emitter.NewEmitter()
-	e.PushString("one item")
-	e.PushString("second item")
-	e.Array(2)
-	e.PushString("third item")
-	e.Load("push")
-	e.Call(2)
-
-	expected := object.CreateArray(
-		[]object.Object{
-			object.CreateString("one item"),
-			object.CreateString("second item"),
-			object.CreateString("third item"),
-		},
-	)
-
-	testVM(t, e, expected)
 }
 
 // Add other builtins
@@ -966,7 +945,7 @@ func TestArrayPush(t *testing.T) {
 // TODO: exit
 
 func TestAssignment(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.PushString("some value")
 	e.Store("x")
 	e.PushString("some other value")
@@ -980,7 +959,7 @@ func TestAssignment(t *testing.T) {
 }
 
 func TestClass(t *testing.T) {
-	e := emitter.NewEmitter()
+	e := emitter.NewEmitter(builtins)
 	e.Class("Something")
 
 	expected := object.Class{
@@ -992,7 +971,7 @@ func TestClass(t *testing.T) {
 }
 
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
-	vm := NewVM(e.Bytecode())
+	vm := NewVM(e.Bytecode(), builtins)
 
 	vm.Run()
 
@@ -1001,7 +980,7 @@ func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 }
 
 func testVMStackEmpty(t *testing.T, e *emitter.Emitter) {
-	vm := NewVM(e.Bytecode())
+	vm := NewVM(e.Bytecode(), builtins)
 
 	vm.Run()
 
