@@ -254,7 +254,7 @@ func (vm *VM) Return() {
 	vm.stackPointer = f.oldPointer
 }
 func (vm *VM) execBuiltin(o object.Object, numArgs int) {
-	args := make([]object.Object, MaxLocals)
+	args := make([]object.Object, numArgs)
 	for i := numArgs - 1; i >= 0; i-- {
 		args[i] = vm.Pop()
 	}
@@ -278,7 +278,7 @@ func (vm *VM) execFunction(o object.Object, numArgs int) {
 		goreland.LogFatal("Can't cast object to closure.")
 	}
 
-	args := make([]object.Object, MaxLocals)
+	args := make([]object.Object, numArgs)
 	for i := numArgs - 1; i >= 0; i-- {
 		args[i] = vm.Pop()
 	}
