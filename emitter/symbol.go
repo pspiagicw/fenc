@@ -35,7 +35,6 @@ func NewSymbolTable() *SymbolTable {
 		storeIndex: 0,
 		Free:       []Symbol{},
 	}
-	registerBuiltins(s)
 
 	return s
 }

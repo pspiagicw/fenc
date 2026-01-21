@@ -3,11 +3,11 @@ package emitter
 import (
 	"fmt"
 
-	"github.com/pspiagicw/fenc/code"
-	"github.com/pspiagicw/fenc/object"
-	"github.com/pspiagicw/goreland"
 	"maps"
 	"slices"
+
+	"github.com/pspiagicw/fenc/code"
+	"github.com/pspiagicw/fenc/object"
 )
 
 // type BuiltinFunc func(args ...object.Object) object.Object
@@ -192,7 +192,7 @@ func (e *Emitter) Load(name string) bool {
 
 	}
 
-	return nil
+	return false
 }
 
 func (e *Emitter) Function(name string, args []string, body CompileFunc) error {
