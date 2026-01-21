@@ -5,9 +5,12 @@ import (
 
 	"github.com/pspiagicw/fenc/code"
 	"github.com/pspiagicw/fenc/object"
+<<<<<<< HEAD
+=======
 	"github.com/pspiagicw/goreland"
 	"maps"
 	"slices"
+>>>>>>> 0645c9fde7ccc64b20d275888b8226604f19b860
 )
 
 // type BuiltinFunc func(args ...object.Object) object.Object
@@ -24,9 +27,12 @@ type Emitter struct {
 	tapeIndex int
 	constants *ConstantPool
 	symbols   *SymbolTable
+<<<<<<< HEAD
 
-	errors   []error
-	builtins map[string]object.Builtin
+	errors []error
+=======
+	builtins  map[string]object.Builtin
+>>>>>>> 0645c9fde7ccc64b20d275888b8226604f19b860
 }
 
 func (e *Emitter) registerError(msg string, values ...any) {

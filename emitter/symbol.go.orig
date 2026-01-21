@@ -1,5 +1,7 @@
 package emitter
 
+<<<<<<< HEAD
+=======
 // var BuiltinMap = map[int]object.Builtin{
 // 	PRINT: {
 // 		Internal: func(args []object.Object) object.Object {
@@ -20,6 +22,7 @@ package emitter
 // 	},
 // }
 
+>>>>>>> 0645c9fde7ccc64b20d275888b8226604f19b860
 type SymbolTable struct {
 	Outer *SymbolTable
 
@@ -35,7 +38,10 @@ func NewSymbolTable() *SymbolTable {
 		storeIndex: 0,
 		Free:       []Symbol{},
 	}
+<<<<<<< HEAD
 	registerBuiltins(s)
+=======
+>>>>>>> 0645c9fde7ccc64b20d275888b8226604f19b860
 
 	return s
 }

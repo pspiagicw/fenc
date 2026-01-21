@@ -971,6 +971,7 @@ func TestClass(t *testing.T) {
 }
 
 func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
+<<<<<<< HEAD
 	errs := e.Errors()
 
 	if len(errs) != 0 {
@@ -981,7 +982,10 @@ func testVM(t *testing.T, e *emitter.Emitter, expected object.Object) {
 		t.Fatal()
 	}
 
+	vm := NewVM(e.Bytecode())
+=======
 	vm := NewVM(e.Bytecode(), builtins)
+>>>>>>> 0645c9fde7ccc64b20d275888b8226604f19b860
 
 	vm.Run()
 

@@ -1,6 +1,6 @@
 module github.com/pspiagicw/fenc
 
-go 1.21.4
+go 1.23
 
 require (
 	github.com/alecthomas/assert/v2 v2.11.0

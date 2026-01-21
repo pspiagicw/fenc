@@ -1,7 +1,10 @@
 package vm
 
 import (
+	"maps"
 	"reflect"
+
+	"slices"
 
 	"github.com/pspiagicw/fenc/code"
 	"github.com/pspiagicw/fenc/emitter"
@@ -28,6 +31,7 @@ type VM struct {
 	stackPointer int
 	constants    []object.Object
 	globals      map[int]object.Object
+	builtins     map[int]object.Builtin
 }
 
 func NewFrame(tape []code.Instruction) *Frame {
@@ -50,9 +54,10 @@ func (vm *VM) pushFrame(f *Frame) {
 	vm.framePointer++
 }
 
-func NewVM(bytecode emitter.ByteCode) *VM {
+func NewVM(bytecode emitter.ByteCode, builtins map[string]object.Builtin) *VM {
 	frames := make([]*Frame, MaxFrames)
 	frames[0] = NewFrame(bytecode.Tape)
+	sortedBuiltins := convertedMap(builtins)
 	return &VM{
 		frames:       frames,
 		stack:        make([]object.Object, StackSize),
@@ -60,7 +65,20 @@ func NewVM(bytecode emitter.ByteCode) *VM {
 		constants:    bytecode.Constants,
 		globals:      map[int]object.Object{},
 		framePointer: 1,
+		builtins:     sortedBuiltins,
 	}
+}
+
+func convertedMap(builtins map[string]object.Builtin) map[int]object.Builtin {
+	sortedKeys := slices.Sorted(maps.Keys(builtins))
+
+	converted := make(map[int]object.Builtin, len(builtins))
+
+	for i, key := range sortedKeys {
+		converted[i] = builtins[key]
+	}
+
+	return converted
 }
 func (vm *VM) Run() {
 	for vm.currentFrame().ip < len(vm.currentFrame().tape) {
@@ -161,8 +179,9 @@ func (vm *VM) Class() {
 
 	vm.Push(class)
 }
+
 func (vm *VM) Builtin(id int) {
-	b := emitter.BuiltinMap[id]
+	b := vm.builtins[id]
 	vm.Push(b)
 }
 func (vm *VM) ToFloat() {
@@ -245,7 +264,7 @@ func (vm *VM) execBuiltin(o object.Object, numArgs int) {
 		goreland.LogFatal("Can't cast to builtin")
 	}
 
-	returnValue := b.Internal(args)
+	returnValue := b.Internal(args...)
 
 	if returnValue.Type() != object.NULL {
 		vm.Push(returnValue)
