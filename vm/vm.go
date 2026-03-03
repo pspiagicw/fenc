@@ -126,6 +126,12 @@ func (vm *VM) Run() {
 			vm.Neq()
 		case code.EQ:
 			vm.Eq()
+		case code.NOT:
+			vm.Not()
+		case code.NEGATE_INT:
+			vm.NegateInt()
+		case code.NEGATE_FLOAT:
+			vm.NegateFloat()
 		case code.ADD_STRING:
 			vm.AddString()
 		case code.JUMP:
@@ -448,6 +454,23 @@ func (vm *VM) Eq() {
 
 	// TODO: Replace this with a more performant one
 	vm.Push(object.CreateBool(reflect.DeepEqual(l, r)))
+}
+func (vm *VM) Not() {
+	v := vm.PopBool()
+
+	vm.Push(object.CreateBool(!v.Value))
+}
+
+func (vm *VM) NegateInt() {
+	v := vm.PopInt()
+
+	vm.Push(object.CreateInt(-v.Value))
+}
+
+func (vm *VM) NegateFloat() {
+	v := vm.PopFloat()
+
+	vm.Push(object.CreateFloat(-v.Value))
 }
 func (vm *VM) AndBool() {
 	r := vm.PopBool()

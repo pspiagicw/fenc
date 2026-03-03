@@ -355,3 +355,15 @@ func (e *Emitter) AddString() {
 func (e *Emitter) ToFloat() {
 	e.Emit(code.TO_FLOAT)
 }
+
+func (e *Emitter) Not() {
+	e.Emit(code.NOT)
+}
+
+func (e *Emitter) NegateInt() {
+	e.Emit(code.NEGATE_INT)
+}
+
+func (e *Emitter) NegateFloat() {
+	e.Emit(code.NEGATE_FLOAT)
+}

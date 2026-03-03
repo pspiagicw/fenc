@@ -38,6 +38,35 @@ func TestAdd(t *testing.T) {
 	testVM(t, e, expected)
 }
 
+// Prefix stuff
+
+func TestNot(t *testing.T) {
+	e := emitter.NewEmitter(builtins)
+	e.PushBool(true)
+	e.Not()
+
+	expected := object.CreateBool(false)
+	testVM(t, e, expected)
+}
+
+func TestNegateInt(t *testing.T) {
+	e := emitter.NewEmitter(builtins)
+	e.PushInt(5)
+	e.NegateInt()
+
+	expected := object.CreateInt(-5)
+	testVM(t, e, expected)
+}
+
+func TestNegateFloat(t *testing.T) {
+	e := emitter.NewEmitter(builtins)
+	e.PushFloat(5.5)
+	e.NegateFloat()
+
+	expected := object.CreateFloat(-5.5)
+	testVM(t, e, expected)
+}
+
 // ==========================
 // Integer arithmetic
 // ==========================
