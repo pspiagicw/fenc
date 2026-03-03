@@ -278,7 +278,8 @@ func (vm *VM) execFunction(o object.Object, numArgs int) {
 		goreland.LogFatal("Can't cast object to closure.")
 	}
 
-	args := make([]object.Object, numArgs)
+	// We set the local-pool to max-locals
+	args := make([]object.Object, MaxLocals)
 	for i := numArgs - 1; i >= 0; i-- {
 		args[i] = vm.Pop()
 	}
