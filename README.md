@@ -1,73 +1,115 @@
 # `fenc`
 
-`fenc` is a bytecode-compiler and runner. 
-In simple words, it helps you write emit bytecode and run it, without worrying about internal implementation.
+`fenc` is a bytecode compiler and VM runtime for a stack-based, typed virtual machine.
+In simple words, it helps you emit bytecode and run it without dealing with the low-level instruction patching yourself.
 
-The API (and the bytecode) is for a stack-based typed VM.
+The API is designed to be used by a language frontend after lexing, parsing, and typechecking.
 
+## Quick Example
 
-
-For example, to add 2 integers. You can use the `fenc` API as follows
-
-```go
-import "github.com/pspiagicw/fenc/emitter"
-
-e := emitter.NewEmitter()
-e.PushInt(1)
-e.PuhsInt(3)
-e.AddInt()
-
-// The stack should contain 4 on top.
-```
-
-Similarly a if-statement is as simple as
+To add two integers:
 
 ```go
-// API implementation for 'if true then 5 else 4 end'
-e.If(
-    func(e *emitter.Emitter) error {
-        // The condition
-        e.PushBool(true)
-    },
-    func(e *emitter.Emitter) error {
-        // The consequence
-        e.PushInt(5)
-    },
-    func(e *emitter.Emitter) error {
-        // The alternative
-        e.PushInt(4)
-    },
+package main
+
+import (
+	"github.com/pspiagicw/fenc/emitter"
+	"github.com/pspiagicw/fenc/object"
 )
 
+func main() {
+	builtins := map[string]object.Builtin{}
+	e := emitter.NewEmitter(builtins)
+	e.PushInt(1)
+	e.PushInt(3)
+	e.AddInt()
+
+	// The stack will contain 4 on top after execution.
+}
 ```
 
-You don't have to worry about jmp instructions, nor do you have to perform calculations or batch-patch any bytecode.
+Similarly, an `if` statement is as simple as:
 
-`fenc` abstracts the bytecode emission for you, providing you with a simple, predictable functional API.
+```go
+// API implementation for: if true then 5 else 4 end
+e.If(
+	func(e *emitter.Emitter) error {
+		e.PushBool(true)
+		return nil
+	},
+	func(e *emitter.Emitter) error {
+		e.PushInt(5)
+		return nil
+	},
+	func(e *emitter.Emitter) error {
+		e.PushInt(4)
+		return nil
+	},
+)
+```
 
-### Usage
+You do not need to worry about jump instructions, offset calculations, or back-patching branches manually.
 
-This library is to be used along with a language-frontend. 
-You will have to perform the lexing, parsing and typechecking yourself.
+`fenc` abstracts bytecode emission for you and exposes a predictable, stack-oriented API.
 
-A robust, first-party implementation using `fenc` is [`tremor`](https://github.com/pspiagicw/tremor)
+## Usage
 
-## Features
+This library is meant to be used along with a language frontend.
+You still perform lexing, parsing, and typechecking yourself.
 
-`fenc` being a stack-based bytecode, has public functions which work on the stack.
+A robust, first-party implementation using `fenc` is [`tremor`](https://github.com/pspiagicw/tremor).
 
-You can push objects (currently only primitive-types and functions/closures/builtins) onto the stack.
+## Builtins
 
-Any operation will pop the items on the stack and push the result back.
+Builtins are registered by name and passed into both the emitter and the VM:
 
-### Basics
+```go
+builtins := map[string]object.Builtin{
+	"print": {
+		Internal: func(args ...object.Object) object.Object {
+			// side effect here
+			return object.Null{}
+		},
+	},
+}
 
-You have 4 basic function calls to push values onto the stack.
+e := emitter.NewEmitter(builtins)
+vm := vm.NewVM(e.Bytecode(), builtins)
+```
 
-- `PushInt()`
-- `PushFloat()`
-- `PushBool()`
-- `PushString()`
+This matters because builtin names are assigned indexes during compilation and those same indexes are used again during execution.
+In practice, use the same builtin map for both `NewEmitter(...)` and `vm.NewVM(...)`.
+
+## Mental Model
+
+`fenc` is stack-based.
+
+- Push values onto the stack.
+- Emit operations that consume values from the stack.
+- The operation pushes its result back onto the stack.
+
+For example:
+
+```go
+e.PushInt(4)
+e.PushInt(2)
+e.DivInt()
+```
+
+This emits bytecode for `4 / 2`, and the result is pushed back onto the stack.
+
+## API Overview
+
+Instead of thinking about the API as a long flat list of functions, it is easier to read it as a small set of operation families.
+
+### Pushing Constants
+
+Use these to put primitive values or compiled functions onto the stack.
+
+| Category | Methods |
+| --- | --- |
+| Primitive values | `PushInt`, `PushFloat`, `PushBool`, `PushString` |
+| Functions | `PushFunction` |
 
 ```go
 e.PushInt(4)
@@ -78,143 +120,140 @@ e.PushFloat(3.1)
 
 ### Arithmetic
 
-You have 4 types of artihmetic, on two types of data-types (int and float)
+Arithmetic follows a consistent naming scheme:
 
-- `AddInt()/AddFloat()`
-- `SubInt()/SubFloat()`
-- `MulInt()/MulFloat()`
-- `DivInt()/DivFloat()`
+- `Add*`, `Sub*`, `Mul*`, `Div*`
+- Type suffix: `Int` or `Float`
+
+So the full set is:
+
+- `AddInt`, `SubInt`, `MulInt`, `DivInt`
+- `AddFloat`, `SubFloat`, `MulFloat`, `DivFloat`
 
 ### Comparison
 
-You again have 4 types of comparison on two data types.
+Comparisons also follow the same pattern:
 
-- `LtInt()/LtFloat()`
-- `LteInt()/LteFloat()`
-- `GtInt()/GtFloat()`
-- `GteInt()/GteFloat()`
+- `Lt*`, `Lte*`, `Gt*`, `Gte*`
+- Type suffix: `Int` or `Float`
 
-### Logical
+So the full set is:
 
-Logical operations only work on booleans.
+- `LtInt`, `LteInt`, `GtInt`, `GteInt`
+- `LtFloat`, `LteFloat`, `GtFloat`, `GteFloat`
 
-- `AndBool()`
-- `OrBool()`
+### Equality, Boolean, and Unary Operations
 
-### Special Comparison
+These operations work directly on the current stack values.
 
-These comparison operators directly compare the items on the stack.
+| Category | Methods |
+| --- | --- |
+| Equality | `Eq`, `Neq` |
+| Boolean logic | `AndBool`, `OrBool`, `Not` |
+| Unary numeric ops | `NegateInt`, `NegateFloat` |
+| Conversion and string ops | `ToFloat`, `AddString` |
 
-- `Eq()`
-- `Neq()`
+`ToFloat` is useful when compiling mixed-type expressions.
 
-### Misc
+## Control Flow
 
-These are functions that are expected to be used by the library user, but not in regular operations.
+Currently, `fenc` supports `if` expressions with or without an `else` branch.
 
-For example
+Function signature:
 
-- `ToFloat()` 
+```go
+func (e *Emitter) If(cond, consequence, alternative CompileFunc) error
+```
 
-It's only used to convert the integer value on the stack to a float.
-Useful when evaluating mixed-type expressions.
+Where `CompileFunc` is:
 
-- `AddString()`
+```go
+type CompileFunc func(*Emitter) error
+```
 
-Adding 2 strings together.
+Each callback receives an emitter and emits the corresponding bytecode block.
+`fenc` calculates jump positions and inserts the required branch instructions automatically.
 
-### Control Flow
+Examples:
 
-Currently we support only `if` statements with/without else branches.
+Standard `if`:
 
-The function header is as follows:
+```go
+e.If(
+	func(e *emitter.Emitter) error {
+		e.PushBool(true)
+		return nil
+	},
+	func(e *emitter.Emitter) error {
+		e.PushInt(10)
+		return nil
+	},
+	func(e *emitter.Emitter) error {
+		e.PushInt(99)
+		return nil
+	},
+)
+```
 
-`func (e *Emitter) If(cond, consequence, alternative CompileFunc) error`
+`if` without `else`:
 
-Here `CompileFunc` is of type `func(*Emitter) error`
-It accepts a emitter where you can emit/compile the condition, consequence and alternative.
+```go
+e.If(
+	func(e *emitter.Emitter) error {
+		e.PushBool(true)
+		return nil
+	},
+	func(e *emitter.Emitter) error {
+		e.PushInt(42)
+		return nil
+	},
+	nil,
+)
+```
 
-The function will calculate the number of instructions to jump and insert the necessary jump instructions.
+Nested `if`:
 
-We plan to support the following conditionals in the future:
-- `cond` (from lisp)
-- `while` 
+```go
+e.If(
+	func(e *emitter.Emitter) error {
+		e.PushBool(true)
+		return nil
+	},
+	func(e *emitter.Emitter) error {
+		return e.If(
+			func(e *emitter.Emitter) error {
+				e.PushBool(false)
+				return nil
+			},
+			func(e *emitter.Emitter) error {
+				e.PushInt(111)
+				return nil
+			},
+			func(e *emitter.Emitter) error {
+				e.PushInt(222)
+				return nil
+			},
+		)
+	},
+	func(e *emitter.Emitter) error {
+		e.PushInt(333)
+		return nil
+	},
+)
+```
+
+Planned future control-flow helpers:
+
+- `cond`
+- `while`
 - `for`
 
-Few examples:
+## Variables
 
-- Standard if statement.
-```go
-e.If(
-    func(e *emitter.Emitter) error {
-        e.PushBool(true)
-        return nil
-    },
-    func(e *emitter.Emitter) error {
-        e.PushInt(10)
-        return nil
-    },
-    func(e *emitter.Emitter) error {
-        e.PushInt(99)
-        return nil
-    },
-)
-```
+`fenc` abstracts local and global variables behind `Store` and `Load`.
+It also handles closures and free variables internally.
 
-- If Without Else Branch
-
-```go
-e.If(
-    func(e *emitter.Emitter) error { // condition
-        e.PushBool(true)
-        return nil
-    },
-    func(e *emitter.Emitter) error { // then
-        e.PushInt(42)
-        return nil
-    },
-    nil, // no else
-)
-```
-
-- Nested If
-```go
-e.If(
-    func(e *emitter.Emitter) error { // outer condition
-        e.PushBool(true)
-        return nil
-    },
-    func(e *emitter.Emitter) error { // outer then
-        return e.If(
-            func(e *emitter.Emitter) error { // inner condition
-                e.PushBool(false)
-                return nil
-            },
-            func(e *emitter.Emitter) error { // inner then
-                e.PushInt(111)
-                return nil
-            },
-            func(e *emitter.Emitter) error { // inner else
-                e.PushInt(222)
-                return nil
-            },
-        )
-    },
-    func(e *emitter.Emitter) error { // outer else
-        e.PushInt(333)
-        return nil
-    },
-)
-```
-
-### Variables
-
-`fenc` abstract local and global variables, you simply invoke the `Store()` and `Load()` functions.
-It takes care of using the local store or global store.
-
-It even takes care of closures and free variables :) (Example shown later)
-
-No need of implementing a symbol-table and tracking free-variables.
+You do not need to manually manage symbol lookup logic in normal use.
 
 ```go
 e.PushInt(10)
@@ -222,7 +261,80 @@ e.Store("x")
 e.Load("x")
 ```
 
-### Functions
+## Functions and Calls
 
-### Lambda
+Function support is also grouped around a few core operations:
 
+| Purpose | Methods |
+| --- | --- |
+| Named functions | `Function` |
+| Anonymous functions | `Lambda` |
+| Call site | `Call`, `Load` |
+| Returning | `Return`, `ReturnValue` |
+
+Typical pattern:
+
+```go
+e.Function("addOne", []string{"x"}, func(e *emitter.Emitter) error {
+	e.Load("x")
+	e.PushInt(1)
+	e.AddInt()
+	e.ReturnValue()
+	return nil
+})
+
+e.Load("addOne")
+e.PushInt(41)
+e.Call(1)
+```
+
+Builtin calls follow the same pattern:
+
+```go
+e.Load("print")
+e.PushString("hello")
+e.Call(1)
+```
+
+## Collections and Object-Like Values
+
+`fenc` also supports collection-building and lookup instructions.
+
+| Category | Methods |
+| --- | --- |
+| Arrays | `Array`, `Index` |
+| Hash maps | `Hash`, `Access` |
+| Classes | `Class` |
+
+These are lower-level building blocks intended for frontends that need structured runtime values.
+
+Note: `classes` are WIP.
+
+## Bytecode and Execution
+
+Once emission is complete:
+
+- `Bytecode()` returns the instruction tape and constant pool.
+- `Errors()` returns any emitter errors collected during compilation.
+
+You can then execute the bytecode with the VM package.
+
+```go
+bytecode := e.Bytecode()
+machine := vm.NewVM(bytecode, builtins)
+machine.Run()
+```
+
+## API Reference by Workflow
+
+If you are integrating `fenc` into a compiler, the most commonly used methods are:
+
+- Value emission: `PushInt`, `PushFloat`, `PushBool`, `PushString`
+- Variables: `Store`, `Load`
+- Arithmetic and comparison: the `*Int` and `*Float` operator families
+- Control flow: `If`
+- Functions: `Function`, `Lambda`, `Call`, `ReturnValue`
+- Containers: `Array`, `Hash`, `Index`, `Access`
+- Finalization: `Bytecode`, `Errors`
+
+That is usually enough to compile a small language frontend without thinking in terms of raw opcodes.
